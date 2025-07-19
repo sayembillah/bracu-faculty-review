@@ -10,6 +10,8 @@ import UserDashboard from "./pages/UserDashboard";
 import Unauthorized from "./pages/Unauthorized";
 import { useDispatch } from "react-redux";
 import { setCredentials } from "./redux/authSlice";
+import AdminLayout from "./layouts/AdminLayout";
+import UserLayout from "./layouts/UserLayout";
 
 const App = () => {
   const dispatch = useDispatch();
@@ -34,22 +36,28 @@ const App = () => {
         <Route path="/signup" element={<Signup />} />
         {/* Admin-section-only */}
         <Route
-          path="/admin/dashboard"
+          path="/admin/*"
           element={
             <AdminRoute>
-              <AdminDashboard />
+              <AdminLayout />
             </AdminRoute>
           }
-        />
+        >
+          {/* Other admin routes go here */}
+          <Route path="dashboard" element={<AdminDashboard />} />
+        </Route>
         {/* User-section-only */}
         <Route
-          path="/user/dashboard"
+          path="/user/*"
           element={
             <UserRoute>
-              <UserDashboard />
+              <UserLayout />
             </UserRoute>
           }
-        />
+        >
+          {/* Other user routes go here */}
+          <Route path="dashboard" element={<UserDashboard />} />
+        </Route>
         {/* Unauthorized */}
         <Route path="/unauthorized" element={<Unauthorized />} />
       </Routes>
