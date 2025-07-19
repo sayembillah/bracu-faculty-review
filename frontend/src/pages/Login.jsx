@@ -29,10 +29,12 @@ const Login = () => {
         password: passwordInput,
       }).unwrap();
       const { name, email, role, token } = res;
-      dispatch(setCredentials({ name, email, role, token }));
+      dispatch(
+        setCredentials({ name, email, role, token, isAuthenticated: true })
+      );
       localStorage.setItem(
         "authData",
-        JSON.stringify({ name, email, role, token })
+        JSON.stringify({ name, token, role, email, isAuthenticated: true })
       );
       console.log(name, email, role, token);
       notifySuccess();

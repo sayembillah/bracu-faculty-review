@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import Login from "./pages/Login";
 import Signup from "./pages/Signup";
 import { BrowserRouter } from "react-router-dom";
@@ -8,8 +8,25 @@ import UserRoute from "./routes/UserRoute";
 import AdminDashboard from "./pages/AdminDashboard";
 import UserDashboard from "./pages/UserDashboard";
 import Unauthorized from "./pages/Unauthorized";
+import { useDispatch } from "react-redux";
+import { setCredentials } from "./redux/authSlice";
 
 const App = () => {
+  const dispatch = useDispatch();
+  const [rehydrated, setRehydrated] = useState(false);
+
+  useEffect(() => {
+    const storedAuth = localStorage.getItem("authData");
+    if (storedAuth) {
+      const { name, token, role, email, isAuthenticated } =
+        JSON.parse(storedAuth);
+      dispatch(setCredentials({ name, token, email, role, isAuthenticated }));
+    }
+    setRehydrated(true);
+  }, [dispatch]);
+
+  if (!rehydrated) return <div>Loading...</div>;
+
   return (
     <BrowserRouter>
       <Routes>
