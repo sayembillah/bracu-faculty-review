@@ -2,10 +2,11 @@ import { createSlice } from "@reduxjs/toolkit";
 
 //This state will hold the current user's data
 const initialState = {
-  user: null,
+  name: null,
+  email: null,
+  role: null,
   token: null,
   isAuthenticated: false,
-  role: null,
 };
 
 const authSlice = createSlice({
@@ -13,10 +14,11 @@ const authSlice = createSlice({
   initialState,
   reducers: {
     setCredentials: (state, action) => {
-      const { user, token, role } = action.payload;
-      state.user = user;
+      const { name, token, role, email } = action.payload;
+      state.name = name;
       state.token = token;
       state.role = role;
+      state.email = email;
       state.isAuthenticated = true;
     },
     logout: (state) => {
