@@ -1,6 +1,8 @@
 import React, { useState } from "react";
 import { Switch, Disclosure } from "@headlessui/react";
 import { Link } from "react-router-dom";
+import { useSignUpUserMutation } from "../redux/apiSlice";
+import toast, { Toaster } from "react-hot-toast";
 
 const Signup = () => {
   const [name, setName] = useState("");
@@ -9,10 +11,16 @@ const Signup = () => {
   const [retypePassword, setRetypePassword] = useState("");
   const [invitationCode, setInvitationCode] = useState("");
   const [showPassword, setShowPassword] = useState(false);
+  const [signUpUser, { isLoading, error }] = useSignUpUserMutation();
 
   const [isAdmin, setIsAdmin] = useState(false); // toggle to show invitation field
 
-  const handleSubmit = (e) => {
+  const notifySuccess = () => toast("successfully created an account ✅");
+  const notifyAlreadyExist = () => toast("User already exists 😅");
+  const notifyFailure = () =>
+    toast("There was an error creating an account ❌");
+
+  const handleSubmit = async (e) => {
     e.preventDefault();
 
     if (password !== retypePassword) {
@@ -22,14 +30,25 @@ const Signup = () => {
 
     const payload = {
       name,
-      email,
       password,
-      role: isAdmin ? "admin" : "user",
-      invitationCode: isAdmin ? invitationCode : null,
+      email,
+      adminInvitationToken: isAdmin ? invitationCode : null,
     };
 
     console.log("Signup payload:", payload);
     // Here you'd dispatch a signup mutation or call API
+    try {
+      const res = await signUpUser(payload).unwrap();
+      notifySuccess();
+      // handle success (e.g., redirect, show message)
+    } catch (err) {
+      if (err.status === 400) {
+        notifyAlreadyExist();
+      } else {
+        notifyFailure();
+      }
+      console.log(err);
+    }
   };
 
   return (
@@ -38,7 +57,7 @@ const Signup = () => {
         <h2 className="text-2xl font-bold text-center text-gray-800">
           Create an Account
         </h2>
-
+        <Toaster />
         <form onSubmit={handleSubmit} className="space-y-4">
           {/* Name */}
           <div>
@@ -148,7 +167,7 @@ const Signup = () => {
             type="submit"
             className="w-full bg-green-600 text-white py-2 rounded-md hover:bg-green-700 transition"
           >
-            Sign Up
+            {isLoading ? "Signing you up.." : "Sign Up"}
           </button>
         </form>
 
