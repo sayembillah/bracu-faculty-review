@@ -50,3 +50,32 @@ export const registerUser = async (req, res) => {
     res.status(500).json({ message: "Server Error", error: error.message });
   }
 };
+
+// Login the user
+export const loginUser = async (req, res) => {
+  try {
+    const { email, password } = req.body; // extract credential from request
+
+    user = await User.findOne({ email }); // find user by email from database
+
+    if (!user) {
+      return res.status(401).json({ message: "Invalid email or password" });
+    } // if user not found return 401
+
+    const isMatch = await bcrypt.compare(password, user.password);
+
+    if (!isMatch) {
+      return res.status(401).json({ message: "Invalid email or password" });
+    } // if password not match return 401
+
+    res.json({
+      _id: user._id,
+      name: user.name,
+      email: user.email,
+      role: user.role,
+      token: generateToken(user._id),
+    });
+  } catch (error) {
+    res.status(500).json({ message: "Server Error", error: error.message });
+  }
+};
