@@ -1,31 +1,39 @@
-import React, { useState, useRef } from "react";
+import React, { useState, useEffect } from "react";
 import { useLoginUserMutation } from "../redux/apiSlice";
 import { useDispatch } from "react-redux";
 import { setCredentials } from "../redux/authSlice";
 import { useNavigate } from "react-router-dom";
 import { Switch, Disclosure } from "@headlessui/react";
+import toast, { Toaster } from "react-hot-toast";
 
 const Login = () => {
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
+  const [emailInput, setEmailInput] = useState("");
+  const [passwordInput, setPasswordInput] = useState("");
   const [showPassword, setShowPassword] = useState(false);
 
   const dispatch = useDispatch();
   //   const navigate = useNavigate();
   const [loginUser, { isLoading, error }] = useLoginUserMutation();
 
+  const notifySuccess = () => toast("successfully signed in ✅");
+  const notifyFailure = () => toast("Something went wrong ❌");
+  const notifyInvalid = () => toast("Invalid Email or Password ❌");
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      const res = await loginUser({ email, password }).unwrap();
+      const res = await loginUser({
+        email: emailInput,
+        password: passwordInput,
+      }).unwrap();
       const { name, email, role, token } = res;
       dispatch(setCredentials({ name, email, role, token }));
-
       localStorage.setItem(
         "authData",
         JSON.stringify({ name, email, role, token })
       );
       console.log(name, email, role, token);
+      notifySuccess();
       //   if (role === "admin") {
       //     navigate("/admin/dashboard");
       //   } else {
@@ -33,6 +41,11 @@ const Login = () => {
       //   }
     } catch (error) {
       console.log("login failed", error);
+      if (error.status === 401) {
+        notifyInvalid();
+      } else {
+        notifyFailure();
+      }
     }
   };
 
@@ -40,6 +53,7 @@ const Login = () => {
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-white px-4">
       <div className="w-full max-w-md bg-white shadow-xl rounded-2xl p-8 space-y-6">
         <h2 className="text-2xl font-bold text-center text-gray-800">Login</h2>
+        <Toaster />
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
             <label className="block text-sm font-medium text-gray-700">
@@ -48,8 +62,8 @@ const Login = () => {
             <input
               type="email"
               required
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
+              value={emailInput}
+              onChange={(e) => setEmailInput(e.target.value)}
               className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring focus:ring-blue-200"
             />
           </div>
@@ -61,8 +75,8 @@ const Login = () => {
             <input
               type={showPassword ? "text" : "password"}
               required
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
+              value={passwordInput}
+              onChange={(e) => setPasswordInput(e.target.value)}
               className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring focus:ring-blue-200"
             />
           </div>
@@ -88,7 +102,7 @@ const Login = () => {
             type="submit"
             className="w-full bg-blue-600 text-white py-2 rounded-md hover:bg-blue-700 transition"
           >
-            Sign In
+            {isLoading ? "Signing in.." : "Sign in"}
           </button>
         </form>
 
@@ -99,8 +113,8 @@ const Login = () => {
                 {open ? "Hide help" : "Need help?"}
               </Disclosure.Button>
               <Disclosure.Panel className="mt-2 text-sm text-gray-600">
-                If you forgot your password, contact support@example.com or
-                click the reset link.
+                If you forgot your password, contact sayembillah2000@gmail.com
+                or click the reset link.
               </Disclosure.Panel>
             </div>
           )}
