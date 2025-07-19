@@ -1,8 +1,10 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { useLoginUserMutation } from "../redux/apiSlice";
 import { useDispatch } from "react-redux";
 import { setCredentials } from "../redux/authSlice";
 import { useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
+
 import { Switch, Disclosure } from "@headlessui/react";
 import toast, { Toaster } from "react-hot-toast";
 
@@ -12,7 +14,7 @@ const Login = () => {
   const [showPassword, setShowPassword] = useState(false);
 
   const dispatch = useDispatch();
-  //   const navigate = useNavigate();
+  const navigate = useNavigate();
   const [loginUser, { isLoading, error }] = useLoginUserMutation();
 
   const notifySuccess = () => toast("successfully signed in ✅");
@@ -34,11 +36,11 @@ const Login = () => {
       );
       console.log(name, email, role, token);
       notifySuccess();
-      //   if (role === "admin") {
-      //     navigate("/admin/dashboard");
-      //   } else {
-      //     navigate("/user/dashboard");
-      //   }
+      if (role === "admin") {
+        navigate("/admin/dashboard");
+      } else {
+        navigate("/user/dashboard");
+      }
     } catch (error) {
       console.log("login failed", error);
       if (error.status === 401) {
@@ -119,6 +121,15 @@ const Login = () => {
             </div>
           )}
         </Disclosure>
+        <p className="text-sm text-center text-gray-600">
+          Don't have an account?{" "}
+          <Link
+            to="/signup"
+            className="text-green-600 hover:underline font-medium"
+          >
+            Sign Up
+          </Link>
+        </p>
       </div>
     </div>
   );
