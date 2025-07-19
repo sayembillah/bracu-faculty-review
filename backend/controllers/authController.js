@@ -25,7 +25,13 @@ export const registerUser = async (req, res) => {
       adminInvitationToken == process.env.ADMIN_INVITATION_TOKEN
     ) {
       role = "admin";
-    }
+    } else if (
+      adminInvitationToken &&
+      adminInvitationToken != process.env.ADMIN_INVITATION_TOKEN
+    )
+      return res
+        .status(498)
+        .json({ message: "Invalid admin invitation token" });
 
     // Hash password
     const salt = await bcrypt.genSalt(10);

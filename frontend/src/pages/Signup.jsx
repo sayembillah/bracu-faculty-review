@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { Switch, Disclosure } from "@headlessui/react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { useSignUpUserMutation } from "../redux/apiSlice";
 import toast, { Toaster } from "react-hot-toast";
 
@@ -12,6 +12,7 @@ const Signup = () => {
   const [invitationCode, setInvitationCode] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [signUpUser, { isLoading, error }] = useSignUpUserMutation();
+  const navigate = useNavigate();
 
   const [isAdmin, setIsAdmin] = useState(false); // toggle to show invitation field
 
@@ -19,6 +20,7 @@ const Signup = () => {
   const notifyAlreadyExist = () => toast("User already exists 😅");
   const notifyFailure = () =>
     toast("There was an error creating an account ❌");
+  const notifyInvalidToken = () => toast("Invalid Admin Invitation Token 😹");
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -40,10 +42,14 @@ const Signup = () => {
     try {
       const res = await signUpUser(payload).unwrap();
       notifySuccess();
+      navigate("/login");
+
       // handle success (e.g., redirect, show message)
     } catch (err) {
       if (err.status === 400) {
         notifyAlreadyExist();
+      } else if (err.status === 498) {
+        notifyInvalidToken();
       } else {
         notifyFailure();
       }
