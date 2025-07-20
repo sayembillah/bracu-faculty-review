@@ -14,6 +14,9 @@ import AdminLayout from "./layouts/AdminLayout";
 import UserLayout from "./layouts/UserLayout";
 import Home from "./pages/Home";
 import FacultyReview from "./pages/FacultyReview";
+import AdminUser from "./pages/AdminUser";
+import AdminFaculty from "./pages/AdminFaculty";
+import AdminReview from "./pages/AdminReview";
 
 const App = () => {
   const dispatch = useDispatch();
@@ -47,8 +50,10 @@ const App = () => {
             </AdminRoute>
           }
         >
-          {/* Other admin routes go here */}
           <Route path="dashboard" element={<AdminDashboard />} />
+          <Route path="user" element={<AdminUser />} />
+          <Route path="faculty" element={<AdminFaculty />} />
+          <Route path="review" element={<AdminReview />} />
         </Route>
         {/* User-section-only */}
         <Route

@@ -68,7 +68,19 @@ const AdminNavbar = () => {
                         <Menu.Item>
                           {({ active }) => (
                             <Link
-                              to="/user"
+                              to="/admin/dashboard"
+                              className={`${
+                                active ? "bg-gray-100" : ""
+                              } block px-4 py-2 text-sm`}
+                            >
+                              Dashboard
+                            </Link>
+                          )}
+                        </Menu.Item>
+                        <Menu.Item>
+                          {({ active }) => (
+                            <Link
+                              to="/admin/user"
                               className={`${
                                 active ? "bg-gray-100" : ""
                               } block px-4 py-2 text-sm`}
@@ -80,7 +92,7 @@ const AdminNavbar = () => {
                         <Menu.Item>
                           {({ active }) => (
                             <Link
-                              to="/faculty"
+                              to="/admin/faculty"
                               className={`${
                                 active ? "bg-gray-100" : ""
                               } block px-4 py-2 text-sm`}
@@ -92,7 +104,7 @@ const AdminNavbar = () => {
                         <Menu.Item>
                           {({ active }) => (
                             <Link
-                              to="/review"
+                              to="/admin/review"
                               className={`${
                                 active ? "bg-gray-100" : ""
                               } block px-4 py-2 text-sm`}
@@ -156,7 +168,19 @@ const AdminNavbar = () => {
                     <Menu.Item>
                       {({ active }) => (
                         <Link
-                          to="/user"
+                          to="/admin/dashboard"
+                          className={`${
+                            active ? "bg-gray-100" : ""
+                          } block px-4 py-2 text-sm`}
+                        >
+                          Dashboard
+                        </Link>
+                      )}
+                    </Menu.Item>
+                    <Menu.Item>
+                      {({ active }) => (
+                        <Link
+                          to="/admin/user"
                           className={`${
                             active ? "bg-gray-100" : ""
                           } block px-4 py-2 text-sm`}
@@ -168,7 +192,7 @@ const AdminNavbar = () => {
                     <Menu.Item>
                       {({ active }) => (
                         <Link
-                          to="/faculty"
+                          to="/admin/faculty"
                           className={`${
                             active ? "bg-gray-100" : ""
                           } block px-4 py-2 text-sm`}
@@ -180,7 +204,7 @@ const AdminNavbar = () => {
                     <Menu.Item>
                       {({ active }) => (
                         <Link
-                          to="/review"
+                          to="/admin/review"
                           className={`${
                             active ? "bg-gray-100" : ""
                           } block px-4 py-2 text-sm`}
