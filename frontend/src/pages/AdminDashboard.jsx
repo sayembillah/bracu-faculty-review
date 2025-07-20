@@ -1,49 +1,48 @@
 import React from "react";
-import { useGetFacultiesQuery } from "../redux/apiSlice";
+import {
+  useGetFacultiesQuery,
+  useGetAdminMetricsQuery,
+} from "../redux/apiSlice";
 import {
   UserGroupIcon,
   AcademicCapIcon,
   ChatBubbleLeftRightIcon,
   EyeIcon,
 } from "@heroicons/react/24/outline";
+import { Tab } from "@headlessui/react";
+import { useGetRecentActivitiesQuery } from "../redux/apiSlice";
+import { ClockIcon } from "@heroicons/react/24/outline";
 
-const cardData = [
+const cardData = (metrics, loading) => [
   {
     title: "Total Users",
-    value: "N/A", // TODO: Replace with real user count from API
+    value: loading ? "..." : metrics?.userCount ?? "N/A",
     icon: <UserGroupIcon className="h-8 w-8 text-blue-500" />,
     bg: "bg-blue-50",
   },
   {
     title: "Total Faculties",
-    value: null, // Will be set from API
+    value: loading ? "..." : metrics?.facultyCount ?? "N/A",
     icon: <AcademicCapIcon className="h-8 w-8 text-green-500" />,
     bg: "bg-green-50",
   },
   {
     title: "Total Reviews",
-    value: "N/A", // TODO: Replace with real review count from API
+    value: loading ? "..." : metrics?.reviewCount ?? "N/A",
     icon: <ChatBubbleLeftRightIcon className="h-8 w-8 text-purple-500" />,
     bg: "bg-purple-50",
   },
   {
     title: "Total Visitors",
-    value: "1234", // Placeholder
+    value: loading ? "..." : metrics?.visitorCount ?? "N/A",
     icon: <EyeIcon className="h-8 w-8 text-yellow-500" />,
     bg: "bg-yellow-50",
   },
 ];
 
 const AdminDashboard = () => {
-  const { data: faculties, isLoading: facultiesLoading } =
-    useGetFacultiesQuery();
-
-  // Set faculty count in cardData
-  const metrics = cardData.map((card) =>
-    card.title === "Total Faculties"
-      ? { ...card, value: facultiesLoading ? "..." : faculties?.length ?? 0 }
-      : card
-  );
+  const { data: metricsData, isLoading: metricsLoading } =
+    useGetAdminMetricsQuery();
 
   return (
     <div className="p-8">
@@ -61,7 +60,7 @@ const AdminDashboard = () => {
       </div>
       <div className="border border-gray-200 rounded-2xl bg-white/50 shadow-sm p-6 mb-4">
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-          {metrics.map((card) => (
+          {cardData(metricsData, metricsLoading).map((card) => (
             <div
               key={card.title}
               className={`rounded-xl shadow-md p-6 flex flex-col items-center ${card.bg} transition hover:scale-105 hover:shadow-lg`}
@@ -73,8 +72,97 @@ const AdminDashboard = () => {
           ))}
         </div>
       </div>
+      {/* Tabs Section */}
+      <div className="mt-8">
+        <Tab.Group>
+          <Tab.List className="flex space-x-2 rounded-xl bg-gray-100 p-1 w-full max-w-xl mx-auto">
+            {["Activities", "Notification", "Requests"].map((tab) => (
+              <Tab
+                key={tab}
+                className={({ selected }) =>
+                  `w-full py-2.5 text-sm leading-5 font-semibold rounded-lg
+                  ${
+                    selected
+                      ? "bg-white shadow text-blue-700"
+                      : "text-gray-500 hover:bg-white/[0.6]"
+                  }`
+                }
+              >
+                {tab}
+              </Tab>
+            ))}
+          </Tab.List>
+          <Tab.Panels className="mt-4">
+            {/* Activities Tab */}
+            <Tab.Panel>
+              <ActivitiesTab />
+            </Tab.Panel>
+            {/* Notification Tab */}
+            <Tab.Panel>
+              <div className="text-center text-gray-400 py-8">
+                No notifications yet.
+              </div>
+            </Tab.Panel>
+            {/* Requests Tab */}
+            <Tab.Panel>
+              <div className="text-center text-gray-400 py-8">
+                No requests at this time.
+              </div>
+            </Tab.Panel>
+          </Tab.Panels>
+        </Tab.Group>
+      </div>
     </div>
   );
 };
+
+// ActivitiesTab component
+function ActivitiesTab() {
+  const { data, isLoading, error } = useGetRecentActivitiesQuery(20);
+
+  if (isLoading) {
+    return (
+      <div className="text-center text-gray-400 py-8">
+        Loading activities...
+      </div>
+    );
+  }
+  if (error) {
+    return (
+      <div className="text-center text-red-400 py-8">
+        Failed to load activities.
+      </div>
+    );
+  }
+  if (!data || data.length === 0) {
+    return (
+      <div className="text-center text-gray-400 py-8">
+        No recent activities.
+      </div>
+    );
+  }
+
+  return (
+    <div className="max-h-96 overflow-y-auto divide-y divide-gray-100 rounded-lg border border-gray-100 bg-white/70 shadow-sm">
+      {data.map((activity, idx) => (
+        <div key={activity._id || idx} className="flex items-center px-4 py-3">
+          <ClockIcon className="h-5 w-5 text-blue-400 mr-3 flex-shrink-0" />
+          <div className="flex-1">
+            <div className="text-sm text-gray-700">
+              <span className="font-medium text-blue-700">
+                {activity.user?.name || "Unknown User"}
+              </span>
+              {" — "}
+              {activity.description}
+            </div>
+            <div className="text-xs text-gray-400 mt-1">
+              {new Date(activity.createdAt).toLocaleString()}
+            </div>
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}
 
 export default AdminDashboard;

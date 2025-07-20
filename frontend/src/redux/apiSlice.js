@@ -129,6 +129,20 @@ export const apiSlice = createApi({
         method: "DELETE",
       }),
     }),
+    // === Admin Activities ===
+    getRecentActivities: builder.query({
+      query: (limit = 20) => ({
+        url: `/admin/activities?limit=${limit}`,
+        method: "GET",
+      }),
+    }),
+    // === Admin Metrics ===
+    getAdminMetrics: builder.query({
+      query: () => ({
+        url: "/admin/metrics",
+        method: "GET",
+      }),
+    }),
   }),
 });
 
@@ -148,4 +162,6 @@ export const {
   useGetFavoriteFacultiesQuery,
   useAddFavoriteFacultyMutation,
   useRemoveFavoriteFacultyMutation,
+  useGetRecentActivitiesQuery,
+  useGetAdminMetricsQuery,
 } = apiSlice;

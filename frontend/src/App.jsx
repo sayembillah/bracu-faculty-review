@@ -32,6 +32,26 @@ const App = () => {
     setRehydrated(true);
   }, [dispatch]);
 
+  // Track anonymous visitor
+  useEffect(() => {
+    let visitorId = localStorage.getItem("visitorId");
+    if (!visitorId) {
+      if (window.crypto && window.crypto.randomUUID) {
+        visitorId = window.crypto.randomUUID();
+      } else {
+        // Fallback for older browsers
+        visitorId =
+          Math.random().toString(36).substring(2) + Date.now().toString(36);
+      }
+      localStorage.setItem("visitorId", visitorId);
+    }
+    fetch("/api/visitor", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ visitorId }),
+    }).catch(() => {});
+  }, []);
+
   if (!rehydrated) return <div>Loading...</div>;
 
   return (

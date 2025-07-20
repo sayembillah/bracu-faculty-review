@@ -1,6 +1,7 @@
 import User from "../models/User.js";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
+import { logActivity } from "./activityController.js";
 
 //Generate JWT Token
 const generateToken = (userId) => {
@@ -44,6 +45,14 @@ export const registerUser = async (req, res) => {
       password: hashedPassword,
       role,
     });
+
+    // Log registration activity
+    await logActivity({
+      type: "other",
+      user: user._id,
+      description: `Registered as ${role}`,
+    });
+
     // Returning user data with JWT token
     res.status(201).json({
       _id: user._id,
@@ -80,6 +89,13 @@ export const loginUser = async (req, res) => {
       email: user.email,
       role: user.role,
       token: generateToken(user._id),
+    });
+
+    // Log login activity
+    await logActivity({
+      type: "login",
+      user: user._id,
+      description: "User logged in",
     });
   } catch (error) {
     res.status(500).json({ message: "Server Error", error: error.message });

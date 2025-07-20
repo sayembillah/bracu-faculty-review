@@ -1,5 +1,6 @@
 import Review from "../models/Review.js";
 import Faculty from "../models/Faculty.js";
+import { logActivity } from "./activityController.js";
 
 // Create a new review
 export const createReview = async (req, res) => {
@@ -49,6 +50,15 @@ export const createReview = async (req, res) => {
       .populate("faculty", "name initial department");
 
     res.status(201).json(populatedReview);
+
+    // Log review creation activity
+    await logActivity({
+      type: "review",
+      user: userId,
+      description: `Reviewed faculty: ${facultyDoc.name}`,
+      relatedEntity: facultyDoc._id,
+      entityModel: "Faculty",
+    });
   } catch (error) {
     res.status(500).json({ message: "Server Error", error: error.message });
   }
@@ -160,6 +170,15 @@ export const likeReview = async (req, res) => {
       "name email"
     );
     res.json(populated);
+
+    // Log like activity
+    await logActivity({
+      type: "like",
+      user: userId,
+      description: `Liked review: ${reviewId}`,
+      relatedEntity: reviewId,
+      entityModel: "Review",
+    });
   } catch (error) {
     res.status(500).json({ message: "Server Error", error: error.message });
   }

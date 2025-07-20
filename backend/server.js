@@ -7,6 +7,9 @@ import authRoutes from "./routes/authRoutes.js";
 import reviewRoutes from "./routes/reviewRoutes.js";
 import facultyRoutes from "./routes/facultyRoutes.js";
 import notificationRoutes from "./routes/notificationRoutes.js";
+import activityRoutes from "./routes/activityRoutes.js";
+import adminRoutes from "./routes/adminRoutes.js";
+import visitorRoutes from "./routes/visitorRoutes.js";
 
 dotenv.config();
 
@@ -26,6 +29,9 @@ app.use("/api/auth", authRoutes);
 app.use("/api", reviewRoutes);
 app.use("/api", facultyRoutes);
 app.use("/api", notificationRoutes);
+app.use("/api", activityRoutes);
+app.use("/api", adminRoutes);
+app.use("/api", visitorRoutes);
 
 //Start Server
 const PORT = process.env.PORT || 5000;
