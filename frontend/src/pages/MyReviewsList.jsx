@@ -198,7 +198,12 @@ const MyReviewsList = ({ onReviewChange }) => {
           </div>
         </div>
       </div>
-      <ul className="space-y-4">
+      <ul
+        className="space-y-4 overflow-y-auto scroll-smooth max-h-96 md:max-h-[32rem] sm:max-h-80 pr-1 custom-scrollbar"
+        style={{
+          WebkitOverflowScrolling: "touch",
+        }}
+      >
         {filteredReviews && filteredReviews.length > 0 ? (
           filteredReviews.map((review) => (
             <li
