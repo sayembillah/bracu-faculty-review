@@ -1,1 +1,28 @@
 @import "tailwindcss";
+
+/* Animated gradient background for hero section */
+.hero-gradient-bg {
+  background: linear-gradient(
+    120deg,
+    #e0ecff,
+    #f3f4f6,
+    #ceeaf8,
+    #e0e7ef,
+    #f1f5f9,
+    #cbd5e1
+  );
+  background-size: 200% 200%;
+  animation: heroGradientMove 8s ease-in-out infinite;
+}
+
+@keyframes heroGradientMove {
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
+}
