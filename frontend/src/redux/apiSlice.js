@@ -92,6 +92,24 @@ export const apiSlice = createApi({
         method: "GET",
       }),
     }),
+    getFacultyReviews: builder.query({
+      query: (facultyId) => ({
+        url: `/faculties/${facultyId}/reviews`,
+        method: "GET",
+      }),
+    }),
+    likeReview: builder.mutation({
+      query: (reviewId) => ({
+        url: `/reviews/${reviewId}/like`,
+        method: "POST",
+      }),
+    }),
+    dislikeReview: builder.mutation({
+      query: (reviewId) => ({
+        url: `/reviews/${reviewId}/dislike`,
+        method: "POST",
+      }),
+    }),
   }),
 });
 
@@ -105,4 +123,7 @@ export const {
   useDeleteReviewMutation,
   useGetMyNotificationsQuery,
   useGetMeQuery,
+  useGetFacultyReviewsQuery,
+  useLikeReviewMutation,
+  useDislikeReviewMutation,
 } = apiSlice;

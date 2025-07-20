@@ -108,6 +108,99 @@ export const updateReview = async (req, res) => {
   }
 };
 
+/**
+ * Get all reviews for a specific faculty (public)
+ */
+export const getReviewsByFaculty = async (req, res) => {
+  try {
+    const facultyId = req.params.id;
+    // Check if faculty exists
+    const facultyDoc = await Faculty.findById(facultyId);
+    if (!facultyDoc) {
+      return res.status(404).json({ message: "Faculty not found" });
+    }
+    // Find and populate reviews
+    const reviews = await Review.find({ faculty: facultyId })
+      .populate("user", "name email")
+      .sort({ createdAt: -1 });
+    res.json(reviews);
+  } catch (error) {
+    res.status(500).json({ message: "Server Error", error: error.message });
+  }
+};
+
+/**
+ * Like a review (user can only like or dislike, not both)
+ */
+export const likeReview = async (req, res) => {
+  try {
+    const userId = req.user._id;
+    const reviewId = req.params.id;
+    const review = await Review.findById(reviewId);
+    if (!review) {
+      return res.status(404).json({ message: "Review not found" });
+    }
+    // Remove user from dislikes if present
+    review.dislikes = review.dislikes.filter(
+      (id) => id.toString() !== userId.toString()
+    );
+    // Toggle like
+    if (review.likes.some((id) => id.toString() === userId.toString())) {
+      // Already liked, remove like
+      review.likes = review.likes.filter(
+        (id) => id.toString() !== userId.toString()
+      );
+    } else {
+      // Add like
+      review.likes.push(userId);
+    }
+    await review.save();
+    const populated = await Review.findById(reviewId).populate(
+      "user",
+      "name email"
+    );
+    res.json(populated);
+  } catch (error) {
+    res.status(500).json({ message: "Server Error", error: error.message });
+  }
+};
+
+/**
+ * Dislike a review (user can only like or dislike, not both)
+ */
+export const dislikeReview = async (req, res) => {
+  try {
+    const userId = req.user._id;
+    const reviewId = req.params.id;
+    const review = await Review.findById(reviewId);
+    if (!review) {
+      return res.status(404).json({ message: "Review not found" });
+    }
+    // Remove user from likes if present
+    review.likes = review.likes.filter(
+      (id) => id.toString() !== userId.toString()
+    );
+    // Toggle dislike
+    if (review.dislikes.some((id) => id.toString() === userId.toString())) {
+      // Already disliked, remove dislike
+      review.dislikes = review.dislikes.filter(
+        (id) => id.toString() !== userId.toString()
+      );
+    } else {
+      // Add dislike
+      review.dislikes.push(userId);
+    }
+    await review.save();
+    const populated = await Review.findById(reviewId).populate(
+      "user",
+      "name email"
+    );
+    res.json(populated);
+  } catch (error) {
+    res.status(500).json({ message: "Server Error", error: error.message });
+  }
+};
+
 // Delete a review by the user
 export const deleteReview = async (req, res) => {
   try {

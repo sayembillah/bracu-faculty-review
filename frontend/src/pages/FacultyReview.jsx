@@ -1,0 +1,239 @@
+import React, { useRef, useState } from "react";
+import { useParams } from "react-router-dom";
+import {
+  useGetFacultiesQuery,
+  useGetFacultyReviewsQuery,
+  useGetMeQuery,
+  useLikeReviewMutation,
+  useDislikeReviewMutation,
+} from "../redux/apiSlice";
+import Header from "../components/Header";
+import {
+  HandThumbUpIcon,
+  HandThumbDownIcon,
+  FlagIcon,
+  UserCircleIcon,
+  StarIcon,
+} from "@heroicons/react/24/outline";
+import { Menu } from "@headlessui/react";
+
+function formatDate(dateString) {
+  const date = new Date(dateString);
+  return date.toLocaleString("en-US", {
+    dateStyle: "medium",
+    timeStyle: "short",
+  });
+}
+
+// Animated count component
+function LikeCount({ value }) {
+  const [animate, setAnimate] = useState(false);
+  const prevValue = useRef(value);
+
+  React.useEffect(() => {
+    if (prevValue.current !== value) {
+      setAnimate(true);
+      prevValue.current = value;
+      const timeout = setTimeout(() => setAnimate(false), 300);
+      return () => clearTimeout(timeout);
+    }
+  }, [value]);
+
+  return (
+    <span
+      className={`inline-block transition-transform duration-200 ${
+        animate ? "scale-125 animate-bounce" : ""
+      }`}
+      style={{
+        willChange: "transform",
+      }}
+    >
+      {value}
+    </span>
+  );
+}
+
+const FacultyReview = () => {
+  const { id } = useParams();
+  const { data: faculties = [], isLoading: facultiesLoading } =
+    useGetFacultiesQuery();
+  const {
+    data: reviews = [],
+    isLoading: reviewsLoading,
+    refetch,
+  } = useGetFacultyReviewsQuery(id);
+  const { data: me } = useGetMeQuery();
+  const [likeReview, { isLoading: liking }] = useLikeReviewMutation();
+  const [dislikeReview, { isLoading: disliking }] = useDislikeReviewMutation();
+
+  const faculty = faculties.find((f) => f._id === id);
+  const userId = me?._id;
+
+  const handleLike = async (reviewId) => {
+    if (!userId) return;
+    await likeReview(reviewId);
+    refetch();
+  };
+
+  const handleDislike = async (reviewId) => {
+    if (!userId) return;
+    await dislikeReview(reviewId);
+    refetch();
+  };
+
+  return (
+    <>
+      <Header />
+      <div className="min-h-screen bg-gray-50 py-8">
+        <div className="max-w-3xl mx-auto px-4">
+          {/* Faculty Info */}
+          <div className="mb-8">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+              {/* Name and tags */}
+              <div>
+                <h1 className="text-4xl font-extrabold text-gray-900 mb-2">
+                  {faculty ? faculty.name : "Faculty Name"}
+                </h1>
+                <div className="flex flex-wrap items-center gap-2 mb-2">
+                  <span className="px-3 py-1 rounded-full bg-blue-100 text-blue-700 text-sm font-medium">
+                    {faculty ? faculty.initial : "Initial"}
+                  </span>
+                  <span className="px-3 py-1 rounded-full bg-green-100 text-green-700 text-sm font-medium">
+                    {faculty && faculty.department ? faculty.department : "CSE"}
+                  </span>
+                  {(faculty && faculty.taughtCourses
+                    ? faculty.taughtCourses
+                    : ["CSE110", "CSE220", "CSE230"]
+                  ).map((course) => (
+                    <span
+                      key={course}
+                      className="px-3 py-1 rounded-full bg-gray-100 text-gray-700 text-sm font-medium"
+                    >
+                      {course}
+                    </span>
+                  ))}
+                </div>
+              </div>
+              {/* Average Rating */}
+              <div className="flex flex-col items-center">
+                <span className="text-gray-500 text-sm mb-1">
+                  Average Rating
+                </span>
+                <div className="rounded-full bg-yellow-100 flex items-center justify-center w-24 h-24 shadow-inner">
+                  <span className="text-4xl font-bold text-yellow-500">
+                    {faculty && faculty.averageRating
+                      ? faculty.averageRating.toFixed(2)
+                      : "N/A"}
+                  </span>
+                </div>
+              </div>
+            </div>
+          </div>
+          {/* Reviews Section */}
+          <div>
+            <h2 className="text-2xl font-semibold text-gray-800 mb-4">
+              Reviews
+            </h2>
+            {reviewsLoading ? (
+              <div className="text-gray-500">Loading reviews...</div>
+            ) : reviews.length === 0 ? (
+              <div className="text-gray-400 italic">No reviews yet.</div>
+            ) : (
+              <div className="space-y-4 max-h-[400px] overflow-y-auto">
+                {reviews.map((review) => {
+                  const liked = userId
+                    ? review.likes?.some((id) => id === userId)
+                    : false;
+                  const disliked = userId
+                    ? review.dislikes?.some((id) => id === userId)
+                    : false;
+                  return (
+                    <div
+                      key={review._id}
+                      className="bg-white rounded-lg shadow p-4 flex flex-col gap-2"
+                    >
+                      {/* Top row: rating, user, date */}
+                      <div className="flex items-center justify-between gap-4">
+                        <div className="flex items-center gap-2">
+                          <div className="w-14 h-14 bg-yellow-100 rounded-lg flex items-center justify-center text-2xl font-bold text-yellow-500 shadow-inner">
+                            {review.rating}
+                            <StarIcon className="h-5 w-5 text-yellow-400 ml-1" />
+                          </div>
+                          <div className="ml-2 flex items-center gap-1 text-gray-700 font-medium">
+                            <UserCircleIcon className="h-5 w-5 text-gray-400" />
+                            {review.user?.name || "Anonymous"}
+                          </div>
+                        </div>
+                        <div className="text-gray-400 text-sm font-mono">
+                          {formatDate(review.createdAt)}
+                        </div>
+                      </div>
+                      {/* Review text */}
+                      <div className="text-gray-800 font-medium mt-2">
+                        {review.text}
+                      </div>
+                      {/* Like/Dislike/Flag buttons */}
+                      <div className="flex items-center gap-6 mt-2">
+                        {/* Like Button */}
+                        <button
+                          className={`flex items-center gap-1 px-3 py-1 rounded-full text-sm font-medium transition ${
+                            liked
+                              ? "bg-blue-100 text-blue-600"
+                              : "bg-gray-100 text-gray-500 hover:bg-blue-50"
+                          }`}
+                          disabled={!userId || liking}
+                          onClick={() => handleLike(review._id)}
+                          title={
+                            !userId
+                              ? "Login to like"
+                              : liked
+                              ? "Unlike"
+                              : "Like"
+                          }
+                        >
+                          <HandThumbUpIcon className="h-5 w-5" />
+                          <LikeCount value={review.likes?.length || 0} />
+                        </button>
+                        {/* Dislike Button */}
+                        <button
+                          className={`flex items-center gap-1 px-3 py-1 rounded-full text-sm font-medium transition ${
+                            disliked
+                              ? "bg-red-100 text-red-600"
+                              : "bg-gray-100 text-gray-500 hover:bg-red-50"
+                          }`}
+                          disabled={!userId || disliking}
+                          onClick={() => handleDislike(review._id)}
+                          title={
+                            !userId
+                              ? "Login to dislike"
+                              : disliked
+                              ? "Remove dislike"
+                              : "Dislike"
+                          }
+                        >
+                          <HandThumbDownIcon className="h-5 w-5" />
+                          <LikeCount value={review.dislikes?.length || 0} />
+                        </button>
+                        {/* Flag Button (disabled) */}
+                        <button
+                          className="flex items-center gap-1 px-3 py-1 rounded-full text-sm font-medium bg-gray-100 text-gray-400 cursor-not-allowed opacity-60"
+                          disabled
+                          title="Flagging will be available soon"
+                        >
+                          <FlagIcon className="h-5 w-5" />
+                          <span>Flag</span>
+                        </button>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+    </>
+  );
+};
+
+export default FacultyReview;

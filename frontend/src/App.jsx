@@ -13,6 +13,7 @@ import { setCredentials } from "./redux/authSlice";
 import AdminLayout from "./layouts/AdminLayout";
 import UserLayout from "./layouts/UserLayout";
 import Home from "./pages/Home";
+import FacultyReview from "./pages/FacultyReview";
 
 const App = () => {
   const dispatch = useDispatch();
@@ -34,6 +35,7 @@ const App = () => {
     <BrowserRouter>
       <Routes>
         <Route path="/" element={<Home />} />
+        <Route path="/faculty/:id" element={<FacultyReview />} />
         <Route path="/login" element={<Login />} />
         <Route path="/signup" element={<Signup />} />
         {/* Admin-section-only */}

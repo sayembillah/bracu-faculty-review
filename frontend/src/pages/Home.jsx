@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import Header from "../components/Header";
 import { useGetFacultiesQuery } from "../redux/apiSlice";
+import { useNavigate } from "react-router-dom";
 import {
   BoltIcon,
   ServerStackIcon,
@@ -51,6 +52,7 @@ const features = [
 const Home = () => {
   const [search, setSearch] = useState("");
   const { data: faculties = [], isLoading } = useGetFacultiesQuery();
+  const navigate = useNavigate();
 
   // Filter faculties by name or initials (case-insensitive)
   const filteredFaculties = faculties.filter(
@@ -106,6 +108,7 @@ const Home = () => {
                     <div
                       key={faculty._id}
                       className="px-4 py-2 text-left hover:bg-blue-50 cursor-pointer transition"
+                      onClick={() => navigate(`/faculty/${faculty._id}`)}
                     >
                       {faculty.name} ({faculty.initial})
                     </div>

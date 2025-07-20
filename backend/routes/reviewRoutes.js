@@ -4,6 +4,8 @@ import {
   getMyReviews,
   updateReview,
   deleteReview,
+  likeReview,
+  dislikeReview,
 } from "../controllers/reviewController.js";
 import authMiddleware from "../middleware/authMiddleware.js";
 
@@ -32,5 +34,19 @@ router.put("/user/reviews/:id", authMiddleware, updateReview);
  * @access  Private
  */
 router.delete("/user/reviews/:id", authMiddleware, deleteReview);
+
+/**
+ * @route   POST /api/reviews/:id/like
+ * @desc    Like a review (user can only like or dislike, not both)
+ * @access  Private
+ */
+router.post("/reviews/:id/like", authMiddleware, likeReview);
+
+/**
+ * @route   POST /api/reviews/:id/dislike
+ * @desc    Dislike a review (user can only like or dislike, not both)
+ * @access  Private
+ */
+router.post("/reviews/:id/dislike", authMiddleware, dislikeReview);
 
 export default router;
