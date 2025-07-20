@@ -1,20 +1,25 @@
-import React from "react";
-import { Fragment } from "react";
+import React, { Fragment } from "react";
 import { Disclosure, Menu, Transition } from "@headlessui/react";
-import { Bars3Icon, XMarkIcon } from "@heroicons/react/24/outline";
-import { Link } from "react-router-dom";
+import {
+  Bars3Icon,
+  XMarkIcon,
+  ArrowRightOnRectangleIcon,
+} from "@heroicons/react/24/outline";
+import { Link, useNavigate } from "react-router-dom";
 import { useDispatch } from "react-redux";
 import { logout } from "../../redux/authSlice";
-import { useNavigate } from "react-router-dom";
+import { useGetMeQuery } from "../../redux/apiSlice";
 
 const AdminNavbar = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
+  const { data: me } = useGetMeQuery(undefined, { pollingInterval: 10000 });
 
   const handleLogout = () => {
     dispatch(logout());
     localStorage.removeItem("authData");
     navigate("/login");
+    window.location.reload();
   };
 
   return (
@@ -101,13 +106,32 @@ const AdminNavbar = () => {
                   </Transition>
                 </Menu>
 
-                {/* Logout */}
-                <button
-                  onClick={handleLogout}
-                  className="text-sm font-medium bg-red-500 hover:bg-red-600 px-3 py-2 rounded-md"
-                >
-                  Logout
-                </button>
+                {/* Auth Buttons */}
+                {!me ? (
+                  <>
+                    <Link
+                      to="/login"
+                      className="px-4 py-2 rounded-md text-sm font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 transition"
+                    >
+                      Sign In
+                    </Link>
+                    <Link
+                      to="/signup"
+                      className="px-4 py-2 rounded-md text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 transition"
+                    >
+                      Sign Up
+                    </Link>
+                  </>
+                ) : (
+                  <button
+                    onClick={handleLogout}
+                    className="flex items-center gap-2 text-sm font-medium bg-red-500 hover:bg-red-600 px-3 py-2 rounded-md"
+                    title="Logout"
+                  >
+                    <ArrowRightOnRectangleIcon className="h-5 w-5" />
+                    Logout
+                  </button>
+                )}
               </div>
             </div>
           </div>
@@ -170,13 +194,32 @@ const AdminNavbar = () => {
               </Transition>
             </Menu>
 
-            {/* Logout (mobile) */}
-            <button
-              onClick={handleLogout}
-              className="block w-full text-left text-sm font-medium bg-red-500 hover:bg-red-600 px-3 py-2 rounded-md text-white"
-            >
-              Logout
-            </button>
+            {/* Auth Buttons (mobile) */}
+            {!me ? (
+              <>
+                <Link
+                  to="/login"
+                  className="block w-full text-left px-4 py-2 rounded-md text-sm font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 transition"
+                >
+                  Sign In
+                </Link>
+                <Link
+                  to="/signup"
+                  className="block w-full text-left px-4 py-2 rounded-md text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 transition"
+                >
+                  Sign Up
+                </Link>
+              </>
+            ) : (
+              <button
+                onClick={handleLogout}
+                className="flex items-center gap-2 w-full text-left text-sm font-medium bg-red-500 hover:bg-red-600 px-3 py-2 rounded-md text-white"
+                title="Logout"
+              >
+                <ArrowRightOnRectangleIcon className="h-5 w-5" />
+                Logout
+              </button>
+            )}
           </Disclosure.Panel>
         </>
       )}

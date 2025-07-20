@@ -7,7 +7,7 @@ const NotificationsPanel = () => {
     data: notifications,
     isLoading,
     error,
-  } = useGetMyNotificationsQuery();
+  } = useGetMyNotificationsQuery(undefined, { pollingInterval: 10000 });
 
   if (isLoading)
     return (

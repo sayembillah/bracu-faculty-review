@@ -5,19 +5,24 @@ import {
   XMarkIcon,
   PencilSquareIcon,
   ArrowRightOnRectangleIcon,
+  HomeIcon,
+  Squares2X2Icon,
 } from "@heroicons/react/24/outline";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link, useLocation } from "react-router-dom";
 import { useDispatch } from "react-redux";
 import { logout } from "../../redux/authSlice";
 import {
   useGetFacultiesQuery,
   useAddReviewMutation,
   useGetMyReviewsQuery,
+  useGetMeQuery,
 } from "../../redux/apiSlice";
 
 const UserNavbar = ({ onReviewAdded }) => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
+  const location = useLocation();
+  const { data: me } = useGetMeQuery(undefined, { pollingInterval: 10000 });
 
   // Modal States
   const [isOpen, setIsOpen] = useState(false); // modal open/close state
@@ -35,13 +40,15 @@ const UserNavbar = ({ onReviewAdded }) => {
     data: faculties,
     isLoading: facultiesLoading,
     error: facultiesError,
-  } = useGetFacultiesQuery();
+  } = useGetFacultiesQuery(undefined, { pollingInterval: 10000 });
 
   // Add review mutation
   const [addReview, { isLoading: isSubmitting }] = useAddReviewMutation();
 
   // Get user's reviews
-  const { data: myReviews } = useGetMyReviewsQuery();
+  const { data: myReviews } = useGetMyReviewsQuery(undefined, {
+    pollingInterval: 10000,
+  });
 
   // Filter faculties by initial or name
   const suggestions =
@@ -64,6 +71,7 @@ const UserNavbar = ({ onReviewAdded }) => {
     dispatch(logout());
     localStorage.removeItem("authData");
     navigate("/login");
+    window.location.reload();
   };
 
   const closeModal = () => {
@@ -116,6 +124,10 @@ const UserNavbar = ({ onReviewAdded }) => {
     }
   };
 
+  // Determine current path
+  const isDashboardHome = location.pathname === "/user";
+  const isDashboardPage = location.pathname === "/user/dashboard";
+
   return (
     <>
       {/* === Navbar === */}
@@ -141,44 +153,143 @@ const UserNavbar = ({ onReviewAdded }) => {
                 </div>
 
                 {/* === Desktop Menu === */}
-                <div className="hidden md:flex space-x-6 items-center">
-                  {/* === Write Review Button === */}
-                  <button
-                    onClick={openModal}
-                    className="text-sm font-medium bg-white border hover:shadow-md px-4 py-2 rounded-md flex items-center gap-2"
-                  >
-                    <PencilSquareIcon className="h-5 w-5" />
-                    Write Review
-                  </button>
-
-                  {/* === Logout Button === */}
-                  <button
-                    onClick={handleLogout}
-                    className="text-sm text-white font-medium bg-red-500 hover:bg-red-600 px-4 py-2 rounded-md flex items-center gap-2"
-                  >
-                    <ArrowRightOnRectangleIcon className="h-5 w-5" />
-                    Logout
-                  </button>
+                <div className="hidden md:flex space-x-4 items-center">
+                  {/* Only show Write Review button on /user/dashboard */}
+                  {me && isDashboardPage && (
+                    <>
+                      <button
+                        onClick={openModal}
+                        className="text-sm font-medium bg-white border hover:shadow-md px-4 py-2 rounded-md flex items-center gap-2"
+                      >
+                        <PencilSquareIcon className="h-5 w-5" />
+                        Write Review
+                      </button>
+                      <Link
+                        to="/"
+                        className="text-sm font-medium bg-white border hover:shadow-md px-4 py-2 rounded-md flex items-center gap-2"
+                      >
+                        <HomeIcon className="h-5 w-5" />
+                        See Review
+                      </Link>
+                    </>
+                  )}
+                  {/* Show See Reviews button only on /user */}
+                  {me && isDashboardHome && (
+                    <Link
+                      to="/"
+                      className="text-sm font-medium bg-white border hover:shadow-md px-4 py-2 rounded-md flex items-center gap-2"
+                    >
+                      <HomeIcon className="h-5 w-5" />
+                      See Reviews
+                    </Link>
+                  )}
+                  {/* Show Dashboard button with icon on all pages except /user/dashboard */}
+                  {me && !isDashboardPage && (
+                    <Link
+                      to="/user/dashboard"
+                      className="text-sm font-medium bg-white border hover:shadow-md px-4 py-2 rounded-md flex items-center gap-2"
+                    >
+                      <Squares2X2Icon className="h-5 w-5" />
+                      Dashboard
+                    </Link>
+                  )}
+                  {/* === Auth Buttons === */}
+                  {!me ? (
+                    <>
+                      <Link
+                        to="/login"
+                        className="px-4 py-2 rounded-md text-sm font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 transition"
+                      >
+                        Sign In
+                      </Link>
+                      <Link
+                        to="/signup"
+                        className="px-4 py-2 rounded-md text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 transition"
+                      >
+                        Sign Up
+                      </Link>
+                    </>
+                  ) : (
+                    <button
+                      onClick={handleLogout}
+                      className="text-sm text-white font-medium bg-red-500 hover:bg-red-600 px-4 py-2 rounded-md flex items-center gap-2"
+                      title="Logout"
+                    >
+                      <ArrowRightOnRectangleIcon className="h-5 w-5" />
+                      Logout
+                    </button>
+                  )}
                 </div>
               </div>
             </div>
 
             {/* === Mobile Menu Panel === */}
             <Disclosure.Panel className="md:hidden px-4 pt-2 pb-4 space-y-2 bg-white shadow-md">
-              <button
-                onClick={openModal}
-                className="block w-full text-left text-sm font-medium bg-white hover:shadow-md px-3 py-2 rounded-md text-gray-700 flex items-center gap-2"
-              >
-                <PencilSquareIcon className="h-5 w-5" />
-                Write Review
-              </button>
-              <button
-                onClick={handleLogout}
-                className="block w-full text-left text-sm font-medium bg-white hover:shadow-sm px-3 py-2 rounded-md text-red-500 flex items-center gap-2"
-              >
-                <ArrowRightOnRectangleIcon className="h-5 w-5" />
-                Logout
-              </button>
+              {/* Only show Write Review button on /user/dashboard */}
+              {me && isDashboardPage && (
+                <>
+                  <button
+                    onClick={openModal}
+                    className="block w-full text-left text-sm font-medium bg-white hover:shadow-md px-3 py-2 rounded-md text-gray-700 flex items-center gap-2"
+                  >
+                    <PencilSquareIcon className="h-5 w-5" />
+                    Write Review
+                  </button>
+                  <Link
+                    to="/"
+                    className="block w-full text-left text-sm font-medium bg-white hover:shadow-md px-3 py-2 rounded-md text-gray-700 flex items-center gap-2"
+                  >
+                    <HomeIcon className="h-5 w-5" />
+                    See Review
+                  </Link>
+                </>
+              )}
+              {/* Show See Reviews button only on /user */}
+              {me && isDashboardHome && (
+                <Link
+                  to="/"
+                  className="block w-full text-left text-sm font-medium bg-white hover:shadow-md px-3 py-2 rounded-md text-gray-700 flex items-center gap-2"
+                >
+                  <HomeIcon className="h-5 w-5" />
+                  See Reviews
+                </Link>
+              )}
+              {/* Show Dashboard button with icon on all pages except /user/dashboard */}
+              {me && !isDashboardPage && (
+                <Link
+                  to="/user/dashboard"
+                  className="block w-full text-left text-sm font-medium bg-white hover:shadow-md px-3 py-2 rounded-md text-gray-700 flex items-center gap-2"
+                >
+                  <Squares2X2Icon className="h-5 w-5" />
+                  Dashboard
+                </Link>
+              )}
+              {/* === Auth Buttons (mobile) === */}
+              {!me ? (
+                <>
+                  <Link
+                    to="/login"
+                    className="block w-full text-left px-4 py-2 rounded-md text-sm font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 transition"
+                  >
+                    Sign In
+                  </Link>
+                  <Link
+                    to="/signup"
+                    className="block w-full text-left px-4 py-2 rounded-md text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 transition"
+                  >
+                    Sign Up
+                  </Link>
+                </>
+              ) : (
+                <button
+                  onClick={handleLogout}
+                  className="flex items-center gap-2 w-full text-left text-sm font-medium bg-red-500 hover:bg-red-600 px-3 py-2 rounded-md text-white"
+                  title="Logout"
+                >
+                  <ArrowRightOnRectangleIcon className="h-5 w-5" />
+                  Logout
+                </button>
+              )}
             </Disclosure.Panel>
           </>
         )}
@@ -387,3 +498,16 @@ const UserNavbar = ({ onReviewAdded }) => {
 };
 
 export default UserNavbar;
+
+<environment_details>
+  # VSCode Visible Files frontend/src/components/navbar/UserNavbar.jsx # VSCode
+  Open Tabs frontend/src/index.css frontend/src/App.jsx
+  frontend/src/pages/Home.jsx backend/routes/facultyRoutes.js
+  backend/controllers/reviewController.js backend/routes/reviewRoutes.js
+  frontend/src/redux/apiSlice.js frontend/src/pages/FacultyReview.jsx
+  frontend/src/components/Header.jsx
+  frontend/src/components/navbar/AdminNavbar.jsx
+  frontend/src/components/navbar/UserNavbar.jsx # Current Time 7/20/2025,
+  10:18:01 PM (Asia/Dhaka, UTC+6:00) # Context Window Usage 97,964 / 128K tokens
+  used (76%) # Current Mode ACT MODE
+</environment_details>;

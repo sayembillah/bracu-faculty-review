@@ -7,7 +7,9 @@ import { useGetMyReviewsQuery } from "../redux/apiSlice";
 
 const UserDashboard = () => {
   const [reviewRefreshKey, setReviewRefreshKey] = useState(0);
-  const { data: reviews } = useGetMyReviewsQuery();
+  const { data: reviews } = useGetMyReviewsQuery(undefined, {
+    pollingInterval: 10000,
+  });
 
   const handleReviewAdded = () => {
     setReviewRefreshKey((k) => k + 1);

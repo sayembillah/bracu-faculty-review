@@ -112,7 +112,12 @@ const EditReviewModal = ({ open, onClose, review, onSave, isLoading }) => {
 };
 
 const MyReviewsList = ({ onReviewChange }) => {
-  const { data: reviews, isLoading, error, refetch } = useGetMyReviewsQuery();
+  const {
+    data: reviews,
+    isLoading,
+    error,
+    refetch,
+  } = useGetMyReviewsQuery(undefined, { pollingInterval: 10000 });
   const [deleteReview] = useDeleteReviewMutation();
   const [deletingId, setDeletingId] = useState(null);
   const [updateReview, { isLoading: isUpdating }] = useUpdateReviewMutation();

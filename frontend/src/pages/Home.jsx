@@ -51,7 +51,9 @@ const features = [
 
 const Home = () => {
   const [search, setSearch] = useState("");
-  const { data: faculties = [], isLoading } = useGetFacultiesQuery();
+  const { data: faculties = [], isLoading } = useGetFacultiesQuery(undefined, {
+    pollingInterval: 10000,
+  });
   const navigate = useNavigate();
 
   // Filter faculties by name or initials (case-insensitive)

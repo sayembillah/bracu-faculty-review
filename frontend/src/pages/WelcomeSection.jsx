@@ -3,7 +3,11 @@ import { useGetMeQuery } from "../redux/apiSlice";
 import { UserCircleIcon } from "@heroicons/react/24/solid";
 
 const WelcomeSection = ({ totalReviews }) => {
-  const { data: user, isLoading, error } = useGetMeQuery();
+  const {
+    data: user,
+    isLoading,
+    error,
+  } = useGetMeQuery(undefined, { pollingInterval: 10000 });
 
   if (isLoading)
     return (

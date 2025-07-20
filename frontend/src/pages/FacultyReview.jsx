@@ -56,13 +56,13 @@ function LikeCount({ value }) {
 const FacultyReview = () => {
   const { id } = useParams();
   const { data: faculties = [], isLoading: facultiesLoading } =
-    useGetFacultiesQuery();
+    useGetFacultiesQuery(undefined, { pollingInterval: 10000 });
   const {
     data: reviews = [],
     isLoading: reviewsLoading,
     refetch,
-  } = useGetFacultyReviewsQuery(id);
-  const { data: me } = useGetMeQuery();
+  } = useGetFacultyReviewsQuery(id, { pollingInterval: 10000 });
+  const { data: me } = useGetMeQuery(undefined, { pollingInterval: 10000 });
   const [likeReview, { isLoading: liking }] = useLikeReviewMutation();
   const [dislikeReview, { isLoading: disliking }] = useDislikeReviewMutation();
 
