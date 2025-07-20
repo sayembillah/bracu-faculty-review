@@ -6,6 +6,9 @@ import {
   useGetMeQuery,
   useLikeReviewMutation,
   useDislikeReviewMutation,
+  useGetFavoriteFacultiesQuery,
+  useAddFavoriteFacultyMutation,
+  useRemoveFavoriteFacultyMutation,
 } from "../redux/apiSlice";
 import Header from "../components/Header";
 import {
@@ -14,6 +17,8 @@ import {
   FlagIcon,
   UserCircleIcon,
   StarIcon,
+  HeartIcon,
+  EyeIcon,
 } from "@heroicons/react/24/outline";
 import { Menu } from "@headlessui/react";
 
@@ -66,8 +71,38 @@ const FacultyReview = () => {
   const [likeReview, { isLoading: liking }] = useLikeReviewMutation();
   const [dislikeReview, { isLoading: disliking }] = useDislikeReviewMutation();
 
+  // Favorite faculty logic
+  const {
+    data: favoriteFaculties = [],
+    refetch: refetchFavorites,
+    isLoading: favoritesLoading,
+  } = useGetFavoriteFacultiesQuery(undefined, { skip: !me });
+  const [addFavorite] = useAddFavoriteFacultyMutation();
+  const [removeFavorite] = useRemoveFavoriteFacultyMutation();
+
   const faculty = faculties.find((f) => f._id === id);
   const userId = me?._id;
+
+  // Check if this faculty is a favorite
+  const isFavorite =
+    !!me &&
+    favoriteFaculties.some &&
+    favoriteFaculties.some((f) => f._id === id);
+
+  // Handle favorite button click
+  const handleFavoriteClick = async () => {
+    if (!me) {
+      alert("Please log in first to favorite a faculty.");
+      window.location.href = "/login";
+      return;
+    }
+    if (isFavorite) {
+      await removeFavorite(id);
+    } else {
+      await addFavorite(id);
+    }
+    refetchFavorites();
+  };
 
   const handleLike = async (reviewId) => {
     if (!userId) return;
@@ -91,9 +126,35 @@ const FacultyReview = () => {
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
               {/* Name and tags */}
               <div>
-                <h1 className="text-4xl font-extrabold text-gray-900 mb-2">
-                  {faculty ? faculty.name : "Faculty Name"}
-                </h1>
+                <div className="flex items-center gap-3">
+                  <h1 className="text-4xl font-extrabold text-gray-900 mb-2">
+                    {faculty ? faculty.name : "Faculty Name"}
+                  </h1>
+                  {/* Favorite Button */}
+                  <button
+                    className={`ml-2 p-2 rounded-full border transition ${
+                      isFavorite
+                        ? "bg-red-100 text-red-500 border-red-200"
+                        : "bg-gray-100 text-gray-400 border-gray-200 hover:bg-red-50 hover:text-red-500"
+                    }`}
+                    title={
+                      me
+                        ? isFavorite
+                          ? "Remove from favorites"
+                          : "Save as favorite"
+                        : "Please log in to favorite"
+                    }
+                    onClick={handleFavoriteClick}
+                    disabled={favoritesLoading}
+                    style={{ outline: "none" }}
+                  >
+                    <HeartIcon
+                      className={`h-6 w-6 ${
+                        isFavorite ? "fill-red-500" : "fill-none"
+                      }`}
+                    />
+                  </button>
+                </div>
                 <div className="flex flex-wrap items-center gap-2 mb-2">
                   <span className="px-3 py-1 rounded-full bg-blue-100 text-blue-700 text-sm font-medium">
                     {faculty ? faculty.initial : "Initial"}

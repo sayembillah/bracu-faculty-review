@@ -86,6 +86,71 @@ export const loginUser = async (req, res) => {
   }
 };
 
+/**
+ * Add a faculty to user's favorites
+ * POST /api/auth/favorites/:facultyId
+ */
+export const addFavoriteFaculty = async (req, res) => {
+  try {
+    const userId = req.user._id;
+    const { facultyId } = req.params;
+    if (!facultyId) {
+      return res.status(400).json({ message: "Faculty ID is required" });
+    }
+    const user = await User.findById(userId);
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+    if (user.favorites.includes(facultyId)) {
+      return res.status(400).json({ message: "Faculty already in favorites" });
+    }
+    user.favorites.push(facultyId);
+    await user.save();
+    res.json({ message: "Faculty added to favorites" });
+  } catch (error) {
+    res.status(500).json({ message: "Server Error", error: error.message });
+  }
+};
+
+/**
+ * Remove a faculty from user's favorites
+ * DELETE /api/auth/favorites/:facultyId
+ */
+export const removeFavoriteFaculty = async (req, res) => {
+  try {
+    const userId = req.user._id;
+    const { facultyId } = req.params;
+    if (!facultyId) {
+      return res.status(400).json({ message: "Faculty ID is required" });
+    }
+    const user = await User.findById(userId);
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+    user.favorites = user.favorites.filter((id) => id.toString() !== facultyId);
+    await user.save();
+    res.json({ message: "Faculty removed from favorites" });
+  } catch (error) {
+    res.status(500).json({ message: "Server Error", error: error.message });
+  }
+};
+
+/**
+ * Get user's favorite faculties (populated)
+ * GET /api/auth/favorites
+ */
+export const getFavoriteFaculties = async (req, res) => {
+  try {
+    const user = await User.findById(req.user._id).populate("favorites");
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+    res.json(user.favorites);
+  } catch (error) {
+    res.status(500).json({ message: "Server Error", error: error.message });
+  }
+};
+
 // Get current user profile
 export const getMe = async (req, res) => {
   try {

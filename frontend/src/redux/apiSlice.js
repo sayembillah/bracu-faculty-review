@@ -110,6 +110,25 @@ export const apiSlice = createApi({
         method: "POST",
       }),
     }),
+    // === Favorite Faculties ===
+    getFavoriteFaculties: builder.query({
+      query: () => ({
+        url: "/auth/favorites",
+        method: "GET",
+      }),
+    }),
+    addFavoriteFaculty: builder.mutation({
+      query: (facultyId) => ({
+        url: `/auth/favorites/${facultyId}`,
+        method: "POST",
+      }),
+    }),
+    removeFavoriteFaculty: builder.mutation({
+      query: (facultyId) => ({
+        url: `/auth/favorites/${facultyId}`,
+        method: "DELETE",
+      }),
+    }),
   }),
 });
 
@@ -126,4 +145,7 @@ export const {
   useGetFacultyReviewsQuery,
   useLikeReviewMutation,
   useDislikeReviewMutation,
+  useGetFavoriteFacultiesQuery,
+  useAddFavoriteFacultyMutation,
+  useRemoveFavoriteFacultyMutation,
 } = apiSlice;
