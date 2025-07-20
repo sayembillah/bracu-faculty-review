@@ -29,6 +29,7 @@ const Login = () => {
         password: passwordInput,
       }).unwrap();
       const { name, email, role, token } = res;
+      // notifySuccess();
       dispatch(
         setCredentials({ name, email, role, token, isAuthenticated: true })
       );
@@ -36,8 +37,7 @@ const Login = () => {
         "authData",
         JSON.stringify({ name, token, role, email, isAuthenticated: true })
       );
-      console.log(name, email, role, token);
-      notifySuccess();
+
       if (role === "admin") {
         navigate("/admin/dashboard");
       } else {

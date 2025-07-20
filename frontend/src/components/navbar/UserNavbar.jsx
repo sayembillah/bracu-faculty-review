@@ -27,7 +27,7 @@ const UserNavbar = () => {
   return (
     <>
       {/* === Navbar === */}
-      <Disclosure as="nav" className="bg-slate-700 text-white">
+      <Disclosure as="nav" className="bg-white shadow-sm text-gray-800">
         {({ open }) => (
           <>
             <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
@@ -53,7 +53,7 @@ const UserNavbar = () => {
                   {/* === Write Review Button === */}
                   <button
                     onClick={openModal}
-                    className="text-sm font-medium bg-blue-500 hover:bg-blue-600 px-4 py-2 rounded-md"
+                    className="text-sm font-medium bg-white border hover:shadow-md px-4 py-2 rounded-md"
                   >
                     Write Review
                   </button>
@@ -61,7 +61,7 @@ const UserNavbar = () => {
                   {/* === Logout Button === */}
                   <button
                     onClick={handleLogout}
-                    className="text-sm font-medium bg-red-500 hover:bg-red-600 px-4 py-2 rounded-md"
+                    className="text-sm text-white font-medium bg-red-500 hover:bg-red-600 px-4 py-2 rounded-md"
                   >
                     Logout
                   </button>
@@ -70,16 +70,16 @@ const UserNavbar = () => {
             </div>
 
             {/* === Mobile Menu Panel === */}
-            <Disclosure.Panel className="md:hidden px-4 pt-2 pb-4 space-y-2 bg-blue-700">
+            <Disclosure.Panel className="md:hidden px-4 pt-2 pb-4 space-y-2 bg-white shadow-md">
               <button
                 onClick={openModal}
-                className="block w-full text-left text-sm font-medium bg-blue-500 hover:bg-blue-600 px-3 py-2 rounded-md text-white"
+                className="block w-full text-left text-sm font-medium bg-white hover:shadow-md px-3 py-2 rounded-md text-gray-700"
               >
                 Write Review
               </button>
               <button
                 onClick={handleLogout}
-                className="block w-full text-left text-sm font-medium bg-red-500 hover:bg-red-600 px-3 py-2 rounded-md text-white"
+                className="block w-full text-left text-sm font-medium bg-white hover:shadow-sm px-3 py-2 rounded-md text-red-500"
               >
                 Logout
               </button>
