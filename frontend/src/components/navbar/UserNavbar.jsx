@@ -1,28 +1,102 @@
 import React, { Fragment, useState } from "react";
-import { Disclosure, Dialog, Transition } from "@headlessui/react";
+import { Disclosure, Dialog, Transition, Switch } from "@headlessui/react";
 import { Bars3Icon, XMarkIcon } from "@heroicons/react/24/outline";
-import { Link, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { useDispatch } from "react-redux";
 import { logout } from "../../redux/authSlice";
 import {
-  ArrowRightOnRectangleIcon,
-  PencilSquareIcon,
-} from "@heroicons/react/24/outline";
+  useGetFacultiesQuery,
+  useAddReviewMutation,
+} from "../../redux/apiSlice";
 
 const UserNavbar = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
 
+  // Modal States
   const [isOpen, setIsOpen] = useState(false); // modal open/close state
+  const [search, setSearch] = useState("");
+  const [selectedFaculty, setSelectedFaculty] = useState(null);
+  const [rating, setRating] = useState(3);
+  const [showReview, setShowReview] = useState(false);
+  const [reviewText, setReviewText] = useState("");
+  const [showSuggestions, setShowSuggestions] = useState(false);
+  const [successMsg, setSuccessMsg] = useState("");
+  const [errorMsg, setErrorMsg] = useState("");
 
+  // Fetch faculties from backend
+  const {
+    data: faculties,
+    isLoading: facultiesLoading,
+    error: facultiesError,
+  } = useGetFacultiesQuery();
+
+  // Add review mutation
+  const [addReview, { isLoading: isSubmitting }] = useAddReviewMutation();
+
+  // Filter faculties by initial or name
+  const suggestions =
+    faculties && search
+      ? faculties.filter(
+          (f) =>
+            f.initial.toLowerCase().startsWith(search.toLowerCase()) ||
+            f.name.toLowerCase().includes(search.toLowerCase())
+        )
+      : [];
+
+  // LOGOUT button functionalities
   const handleLogout = () => {
     dispatch(logout());
     localStorage.removeItem("authData");
     navigate("/login");
   };
 
-  const closeModal = () => setIsOpen(false);
+  const closeModal = () => {
+    setIsOpen(false);
+    setSearch("");
+    setSelectedFaculty(null);
+    setRating(3);
+    setShowReview(false);
+    setReviewText("");
+    setShowSuggestions(false);
+    setSuccessMsg("");
+    setErrorMsg("");
+  };
   const openModal = () => setIsOpen(true);
+
+  // Handle faculty selection from suggestions
+  const handleSelectFaculty = (faculty) => {
+    setSelectedFaculty(faculty);
+    setSearch(faculty.initial);
+    setShowSuggestions(false);
+  };
+
+  // Handle review submission
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setSuccessMsg("");
+    setErrorMsg("");
+    if (!selectedFaculty || !rating) {
+      setErrorMsg("Faculty and rating are required.");
+      return;
+    }
+    try {
+      await addReview({
+        faculty: selectedFaculty._id,
+        rating,
+        text: showReview ? reviewText : "",
+      }).unwrap();
+      setSuccessMsg("Review submitted successfully!");
+      setTimeout(() => {
+        setSuccessMsg("");
+        closeModal();
+      }, 2000);
+    } catch (err) {
+      setErrorMsg(
+        err?.data?.message || "Failed to submit review. Please try again."
+      );
+    }
+  };
 
   return (
     <>
@@ -114,52 +188,165 @@ const UserNavbar = () => {
                 leaveFrom="opacity-100 scale-100"
                 leaveTo="opacity-0 scale-95"
               >
-                <Dialog.Panel className="relative w-full max-w-lg transform overflow-hidden rounded-2xl bg-white p-6 text-left align-middle shadow-xl transition-all">
-                  {/* === Modal Title & Close Button === */}
+                <Dialog.Panel className="w-full max-w-lg transform overflow-hidden rounded-2xl bg-white p-6 text-left align-middle shadow-xl transition-all">
+                  {/* === Modal Title === */}
                   <Dialog.Title
                     as="h3"
-                    className="text-lg font-medium leading-6 text-gray-900"
+                    className="text-xl font-semibold text-gray-900 mb-4"
                   >
                     Write a Review
                   </Dialog.Title>
-                  <button
-                    className="absolute top-3 right-4 text-gray-400 hover:text-gray-600"
-                    onClick={closeModal}
-                  >
-                    ×
-                  </button>
 
-                  {/* === Modal Form (Dummy) === */}
-                  <div className="mt-4 space-y-4">
-                    <input
-                      type="text"
-                      placeholder="Course Name"
-                      className="w-full border border-gray-300 rounded-md px-4 py-2 focus:outline-none focus:ring focus:ring-blue-200"
-                    />
-                    <textarea
-                      placeholder="Your Review"
-                      className="w-full border border-gray-300 rounded-md px-4 py-2 h-28 resize-none focus:outline-none focus:ring focus:ring-blue-200"
-                    />
-                  </div>
+                  {/* === Faculty Search and Select === */}
+                  <form onSubmit={handleSubmit}>
+                    <div className="mb-4">
+                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                        Faculty Initial or Name
+                      </label>
+                      <input
+                        type="text"
+                        value={search}
+                        onChange={(e) => {
+                          setSearch(e.target.value.toUpperCase());
+                          setShowSuggestions(true);
+                          setSelectedFaculty(null);
+                        }}
+                        onFocus={() => setShowSuggestions(true)}
+                        className="w-full border border-blue-300 rounded-md px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-300 transition-all duration-150"
+                        placeholder="E.g., AAC or Alice"
+                        autoComplete="off"
+                      />
+                      <span className="text-xs text-gray-500 mt-1 block">
+                        Start typing to see suggestions. Only existing faculties
+                        are allowed.
+                      </span>
+                      {facultiesLoading && (
+                        <div className="text-xs text-gray-400 mt-1">
+                          Loading faculties...
+                        </div>
+                      )}
+                      {facultiesError && (
+                        <div className="text-xs text-red-500 mt-1">
+                          Failed to load faculties.
+                        </div>
+                      )}
+                      {search && suggestions.length > 0 && showSuggestions && (
+                        <ul className="mt-2 bg-white border border-gray-200 rounded-md max-h-28 overflow-y-auto text-sm shadow transition-all duration-150 z-10">
+                          {suggestions.map((item) => (
+                            <li
+                              key={item._id}
+                              onClick={() => handleSelectFaculty(item)}
+                              className={`px-4 py-2 hover:bg-blue-100 cursor-pointer transition-colors duration-100 rounded ${
+                                selectedFaculty &&
+                                selectedFaculty._id === item._id
+                                  ? "bg-blue-50 font-semibold"
+                                  : ""
+                              }`}
+                            >
+                              {item.initial} - {item.name}
+                              {item.department && (
+                                <span className="text-xs text-gray-400 ml-2">
+                                  ({item.department})
+                                </span>
+                              )}
+                            </li>
+                          ))}
+                        </ul>
+                      )}
+                      {search &&
+                        suggestions.length === 0 &&
+                        !facultiesLoading && (
+                          <div className="text-xs text-gray-400 mt-2">
+                            No faculty found with that initial or name.
+                          </div>
+                        )}
+                      {selectedFaculty && (
+                        <div className="mt-2 text-xs text-green-600">
+                          Selected: {selectedFaculty.initial} -{" "}
+                          {selectedFaculty.name}
+                        </div>
+                      )}
+                    </div>
 
-                  {/* === Modal Footer Buttons === */}
-                  <div className="mt-6 flex justify-end space-x-3">
-                    <button
-                      onClick={closeModal}
-                      className="px-4 py-2 bg-gray-200 hover:bg-gray-300 text-gray-700 rounded-md"
-                    >
-                      Discard
-                    </button>
-                    <button
-                      onClick={() => {
-                        // You can handle post logic here later
-                        closeModal();
-                      }}
-                      className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-md"
-                    >
-                      Post
-                    </button>
-                  </div>
+                    {/* === Rating Slider === */}
+                    <div className="mb-4">
+                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                        Rating: {rating}
+                      </label>
+                      <input
+                        type="range"
+                        min="1"
+                        max="5"
+                        value={rating}
+                        onChange={(e) => setRating(Number(e.target.value))}
+                        className="w-full"
+                      />
+                    </div>
+
+                    {/* === Toggle Switch for Review Textarea === */}
+                    <div className="mb-4 flex items-center justify-between">
+                      <span className="text-sm font-medium text-gray-700">
+                        Add written review?
+                      </span>
+                      <Switch
+                        checked={showReview}
+                        onChange={setShowReview}
+                        className={`${
+                          showReview ? "bg-blue-600" : "bg-gray-300"
+                        } relative inline-flex h-6 w-11 items-center rounded-full`}
+                      >
+                        <span
+                          className={`${
+                            showReview ? "translate-x-6" : "translate-x-1"
+                          } inline-block h-4 w-4 transform rounded-full bg-white transition`}
+                        />
+                      </Switch>
+                    </div>
+
+                    {/* === Review Textarea === */}
+                    {showReview && (
+                      <textarea
+                        placeholder="Write your review here..."
+                        value={reviewText}
+                        onChange={(e) => setReviewText(e.target.value)}
+                        className="w-full border border-gray-300 rounded-md px-4 py-2 h-24 resize-none focus:outline-none focus:ring focus:ring-blue-200 mb-4"
+                      />
+                    )}
+
+                    {/* === Action Buttons === */}
+                    <div className="mt-6 flex justify-end space-x-3">
+                      <button
+                        type="button"
+                        onClick={closeModal}
+                        className="px-4 py-2 border border-red-500 text-red-500 hover:bg-red-50 rounded-md"
+                        disabled={isSubmitting}
+                      >
+                        Discard
+                      </button>
+                      <button
+                        type="submit"
+                        className="px-4 py-2 border border-gray-400 text-gray-700 hover:bg-gray-50 rounded-md"
+                        disabled={
+                          isSubmitting ||
+                          facultiesLoading ||
+                          !selectedFaculty ||
+                          !rating
+                        }
+                      >
+                        {isSubmitting ? "Submitting..." : "Submit"}
+                      </button>
+                    </div>
+                    {errorMsg && (
+                      <div className="text-red-500 text-sm mt-3">
+                        {errorMsg}
+                      </div>
+                    )}
+                    {successMsg && (
+                      <div className="text-green-600 text-sm mt-3">
+                        {successMsg}
+                      </div>
+                    )}
+                  </form>
                 </Dialog.Panel>
               </Transition.Child>
             </div>

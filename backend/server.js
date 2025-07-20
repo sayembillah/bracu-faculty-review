@@ -4,6 +4,8 @@ import cors from "cors";
 import path from "path";
 import connectDB from "./config/db.js";
 import authRoutes from "./routes/authRoutes.js";
+import reviewRoutes from "./routes/reviewRoutes.js";
+import facultyRoutes from "./routes/facultyRoutes.js";
 
 dotenv.config();
 
@@ -20,6 +22,8 @@ connectDB();
 
 //Routes
 app.use("/api/auth", authRoutes);
+app.use("/api", reviewRoutes);
+app.use("/api", facultyRoutes);
 
 //Start Server
 const PORT = process.env.PORT || 5000;
