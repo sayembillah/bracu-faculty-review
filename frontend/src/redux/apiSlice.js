@@ -43,10 +43,52 @@ export const apiSlice = createApi({
         method: "POST",
         body: reviewData,
       }),
+      invalidatesTags: [{ type: "Review", id: "LIST" }],
     }),
     getFaculties: builder.query({
       query: () => ({
         url: "/faculties",
+        method: "GET",
+      }),
+    }),
+    getMyReviews: builder.query({
+      query: () => ({
+        url: "/user/reviews/my",
+        method: "GET",
+      }),
+      providesTags: (result) =>
+        result
+          ? [
+              ...result.map((review) => ({
+                type: "Review",
+                id: review._id,
+              })),
+              { type: "Review", id: "LIST" },
+            ]
+          : [{ type: "Review", id: "LIST" }],
+    }),
+    updateReview: builder.mutation({
+      query: ({ id, ...data }) => ({
+        url: `/user/reviews/${id}`,
+        method: "PUT",
+        body: data,
+      }),
+    }),
+    deleteReview: builder.mutation({
+      query: (id) => ({
+        url: `/user/reviews/${id}`,
+        method: "DELETE",
+      }),
+    }),
+    getMyNotifications: builder.query({
+      query: () => ({
+        url: "/user/notifications/my",
+        method: "GET",
+      }),
+    }),
+    getMe: builder.query({
+      query: () => ({
+        url: "/auth/me",
         method: "GET",
       }),
     }),
@@ -58,4 +100,9 @@ export const {
   useSignUpUserMutation,
   useAddReviewMutation,
   useGetFacultiesQuery,
+  useGetMyReviewsQuery,
+  useUpdateReviewMutation,
+  useDeleteReviewMutation,
+  useGetMyNotificationsQuery,
+  useGetMeQuery,
 } = apiSlice;

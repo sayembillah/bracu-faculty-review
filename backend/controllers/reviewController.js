@@ -53,3 +53,93 @@ export const createReview = async (req, res) => {
     res.status(500).json({ message: "Server Error", error: error.message });
   }
 };
+
+// Get all reviews by the authenticated user
+export const getMyReviews = async (req, res) => {
+  try {
+    const userId = req.user._id;
+    const reviews = await Review.find({ user: userId })
+      .populate("faculty", "name initial department")
+      .sort({ createdAt: -1 });
+    res.json(reviews);
+  } catch (error) {
+    res.status(500).json({ message: "Server Error", error: error.message });
+  }
+};
+
+// Update a review by the user
+export const updateReview = async (req, res) => {
+  try {
+    const userId = req.user._id;
+    const reviewId = req.params.id;
+    const { rating, text } = req.body;
+
+    const review = await Review.findById(reviewId);
+    if (!review) {
+      return res.status(404).json({ message: "Review not found" });
+    }
+    if (review.user.toString() !== userId.toString()) {
+      return res.status(403).json({ message: "Not authorized" });
+    }
+
+    if (rating !== undefined) review.rating = rating;
+    if (text !== undefined) review.text = text;
+
+    await review.save();
+
+    // Update faculty's averageRating and totalReviews
+    const facultyDoc = await Faculty.findById(review.faculty);
+    const reviews = await Review.find({ faculty: review.faculty });
+    const totalReviews = reviews.length;
+    const averageRating =
+      reviews.reduce((sum, r) => sum + r.rating, 0) / totalReviews;
+
+    facultyDoc.averageRating = averageRating;
+    facultyDoc.totalReviews = totalReviews;
+    await facultyDoc.save();
+
+    const populatedReview = await Review.findById(review._id)
+      .populate("user", "name email")
+      .populate("faculty", "name initial department");
+
+    res.json(populatedReview);
+  } catch (error) {
+    res.status(500).json({ message: "Server Error", error: error.message });
+  }
+};
+
+// Delete a review by the user
+export const deleteReview = async (req, res) => {
+  try {
+    const userId = req.user._id;
+    const reviewId = req.params.id;
+
+    const review = await Review.findById(reviewId);
+    if (!review) {
+      return res.status(404).json({ message: "Review not found" });
+    }
+    if (review.user.toString() !== userId.toString()) {
+      return res.status(403).json({ message: "Not authorized" });
+    }
+
+    const facultyId = review.faculty;
+    await review.deleteOne();
+
+    // Update faculty's averageRating and totalReviews
+    const facultyDoc = await Faculty.findById(facultyId);
+    const reviews = await Review.find({ faculty: facultyId });
+    const totalReviews = reviews.length;
+    const averageRating =
+      totalReviews > 0
+        ? reviews.reduce((sum, r) => sum + r.rating, 0) / totalReviews
+        : 0;
+
+    facultyDoc.averageRating = averageRating;
+    facultyDoc.totalReviews = totalReviews;
+    await facultyDoc.save();
+
+    res.json({ message: "Review deleted" });
+  } catch (error) {
+    res.status(500).json({ message: "Server Error", error: error.message });
+  }
+};

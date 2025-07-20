@@ -6,6 +6,7 @@ import connectDB from "./config/db.js";
 import authRoutes from "./routes/authRoutes.js";
 import reviewRoutes from "./routes/reviewRoutes.js";
 import facultyRoutes from "./routes/facultyRoutes.js";
+import notificationRoutes from "./routes/notificationRoutes.js";
 
 dotenv.config();
 
@@ -24,6 +25,7 @@ connectDB();
 app.use("/api/auth", authRoutes);
 app.use("/api", reviewRoutes);
 app.use("/api", facultyRoutes);
+app.use("/api", notificationRoutes);
 
 //Start Server
 const PORT = process.env.PORT || 5000;

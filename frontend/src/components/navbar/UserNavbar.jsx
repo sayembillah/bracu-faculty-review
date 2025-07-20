@@ -1,15 +1,21 @@
 import React, { Fragment, useState } from "react";
 import { Disclosure, Dialog, Transition, Switch } from "@headlessui/react";
-import { Bars3Icon, XMarkIcon } from "@heroicons/react/24/outline";
+import {
+  Bars3Icon,
+  XMarkIcon,
+  PencilSquareIcon,
+  ArrowRightOnRectangleIcon,
+} from "@heroicons/react/24/outline";
 import { useNavigate } from "react-router-dom";
 import { useDispatch } from "react-redux";
 import { logout } from "../../redux/authSlice";
 import {
   useGetFacultiesQuery,
   useAddReviewMutation,
+  useGetMyReviewsQuery,
 } from "../../redux/apiSlice";
 
-const UserNavbar = () => {
+const UserNavbar = ({ onReviewAdded }) => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
 
@@ -34,6 +40,9 @@ const UserNavbar = () => {
   // Add review mutation
   const [addReview, { isLoading: isSubmitting }] = useAddReviewMutation();
 
+  // Get user's reviews
+  const { data: myReviews } = useGetMyReviewsQuery();
+
   // Filter faculties by initial or name
   const suggestions =
     faculties && search
@@ -43,6 +52,12 @@ const UserNavbar = () => {
             f.name.toLowerCase().includes(search.toLowerCase())
         )
       : [];
+
+  // Check for duplicate review
+  const duplicateReview =
+    selectedFaculty &&
+    myReviews &&
+    myReviews.some((r) => r.faculty?._id === selectedFaculty._id);
 
   // LOGOUT button functionalities
   const handleLogout = () => {
@@ -87,6 +102,9 @@ const UserNavbar = () => {
         text: showReview ? reviewText : "",
       }).unwrap();
       setSuccessMsg("Review submitted successfully!");
+      setSelectedFaculty(null);
+      setSearch("");
+      if (onReviewAdded) onReviewAdded();
       setTimeout(() => {
         setSuccessMsg("");
         closeModal();
@@ -127,16 +145,18 @@ const UserNavbar = () => {
                   {/* === Write Review Button === */}
                   <button
                     onClick={openModal}
-                    className="text-sm font-medium bg-white border hover:shadow-md px-4 py-2 rounded-md"
+                    className="text-sm font-medium bg-white border hover:shadow-md px-4 py-2 rounded-md flex items-center gap-2"
                   >
+                    <PencilSquareIcon className="h-5 w-5" />
                     Write Review
                   </button>
 
                   {/* === Logout Button === */}
                   <button
                     onClick={handleLogout}
-                    className="text-sm text-white font-medium bg-red-500 hover:bg-red-600 px-4 py-2 rounded-md"
+                    className="text-sm text-white font-medium bg-red-500 hover:bg-red-600 px-4 py-2 rounded-md flex items-center gap-2"
                   >
+                    <ArrowRightOnRectangleIcon className="h-5 w-5" />
                     Logout
                   </button>
                 </div>
@@ -147,14 +167,16 @@ const UserNavbar = () => {
             <Disclosure.Panel className="md:hidden px-4 pt-2 pb-4 space-y-2 bg-white shadow-md">
               <button
                 onClick={openModal}
-                className="block w-full text-left text-sm font-medium bg-white hover:shadow-md px-3 py-2 rounded-md text-gray-700"
+                className="block w-full text-left text-sm font-medium bg-white hover:shadow-md px-3 py-2 rounded-md text-gray-700 flex items-center gap-2"
               >
+                <PencilSquareIcon className="h-5 w-5" />
                 Write Review
               </button>
               <button
                 onClick={handleLogout}
-                className="block w-full text-left text-sm font-medium bg-white hover:shadow-sm px-3 py-2 rounded-md text-red-500"
+                className="block w-full text-left text-sm font-medium bg-white hover:shadow-sm px-3 py-2 rounded-md text-red-500 flex items-center gap-2"
               >
+                <ArrowRightOnRectangleIcon className="h-5 w-5" />
                 Logout
               </button>
             </Disclosure.Panel>
@@ -330,12 +352,19 @@ const UserNavbar = () => {
                           isSubmitting ||
                           facultiesLoading ||
                           !selectedFaculty ||
-                          !rating
+                          !rating ||
+                          duplicateReview
                         }
                       >
                         {isSubmitting ? "Submitting..." : "Submit"}
                       </button>
                     </div>
+                    {duplicateReview && (
+                      <div className="text-yellow-600 text-sm mt-3">
+                        Your review on that faculty already exists. Kindly
+                        delete or edit that review.
+                      </div>
+                    )}
                     {errorMsg && (
                       <div className="text-red-500 text-sm mt-3">
                         {errorMsg}
