@@ -8,6 +8,8 @@ import {
   PencilSquareIcon,
   TrashIcon,
   MagnifyingGlassIcon,
+  HandThumbUpIcon,
+  HandThumbDownIcon,
 } from "@heroicons/react/24/outline";
 import { Dialog, Transition } from "@headlessui/react";
 
@@ -226,6 +228,17 @@ const MyReviewsList = ({ onReviewChange }) => {
               <div className="text-gray-500 text-sm">
                 <span className="font-medium">Date:</span>{" "}
                 {new Date(review.createdAt).toLocaleDateString()}
+              </div>
+              {/* Like/Dislike counts */}
+              <div className="flex items-center gap-4 mt-2">
+                <span className="flex items-center gap-1 text-green-600">
+                  <HandThumbUpIcon className="h-5 w-5" />
+                  {review.likes ? review.likes.length : 0}
+                </span>
+                <span className="flex items-center gap-1 text-red-600">
+                  <HandThumbDownIcon className="h-5 w-5" />
+                  {review.dislikes ? review.dislikes.length : 0}
+                </span>
               </div>
               <div className="flex gap-2 mt-2">
                 <button
