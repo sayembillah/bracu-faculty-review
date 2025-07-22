@@ -51,6 +51,29 @@ export const apiSlice = createApi({
         method: "GET",
       }),
     }),
+    addFaculty: builder.mutation({
+      query: (facultyData) => ({
+        url: "/faculties",
+        method: "POST",
+        body: facultyData,
+      }),
+      invalidatesTags: [{ type: "Faculty", id: "LIST" }],
+    }),
+    updateFaculty: builder.mutation({
+      query: ({ id, ...facultyData }) => ({
+        url: `/faculties/${id}`,
+        method: "PUT",
+        body: facultyData,
+      }),
+      invalidatesTags: [{ type: "Faculty", id: "LIST" }],
+    }),
+    deleteFaculty: builder.mutation({
+      query: (id) => ({
+        url: `/faculties/${id}`,
+        method: "DELETE",
+      }),
+      invalidatesTags: [{ type: "Faculty", id: "LIST" }],
+    }),
     getMyReviews: builder.query({
       query: () => ({
         url: "/user/reviews/my",
@@ -147,6 +170,9 @@ export const apiSlice = createApi({
 });
 
 export const {
+  useAddFacultyMutation,
+  useUpdateFacultyMutation,
+  useDeleteFacultyMutation,
   useLoginUserMutation,
   useSignUpUserMutation,
   useAddReviewMutation,
