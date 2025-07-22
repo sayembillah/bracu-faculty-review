@@ -60,8 +60,9 @@ function LikeCount({ value }) {
 
 const FacultyReview = () => {
   const { id } = useParams();
-  const { data: faculties = [], isLoading: facultiesLoading } =
-    useGetFacultiesQuery(undefined, { pollingInterval: 10000 });
+  const { data: faculties = [] } = useGetFacultiesQuery(undefined, {
+    pollingInterval: 10000,
+  });
   const {
     data: reviews = [],
     isLoading: reviewsLoading,
@@ -222,7 +223,9 @@ const FacultyReview = () => {
                           </div>
                           <div className="ml-2 flex items-center gap-1 text-gray-700 font-medium">
                             <UserCircleIcon className="h-5 w-5 text-gray-400" />
-                            {review.user?.name || "Anonymous"}
+                            {review.isAdmin
+                              ? "Posted by Admin, from Public groups"
+                              : review.user?.name || "Anonymous"}
                           </div>
                         </div>
                         <div className="text-gray-400 text-sm font-mono">

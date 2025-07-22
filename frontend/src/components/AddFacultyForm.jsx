@@ -9,6 +9,9 @@ import {
   XMarkIcon,
   ArrowPathIcon,
   CheckCircleIcon,
+  StarIcon,
+  PencilIcon,
+  TrashIcon,
 } from "@heroicons/react/24/outline";
 import { useAddFacultyMutation } from "../redux/apiSlice";
 
@@ -31,6 +34,10 @@ export default function AddFacultyForm({ onFacultyAdded }) {
   const [department, setDepartment] = useState("");
   const [courseInput, setCourseInput] = useState("");
   const [taughtCourses, setTaughtCourses] = useState([]);
+  const [adminReviews, setAdminReviews] = useState([]);
+  const [reviewText, setReviewText] = useState("");
+  const [reviewRating, setReviewRating] = useState(5);
+  const [editingReviewIdx, setEditingReviewIdx] = useState(null);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
   const [addFaculty, { isLoading }] = useAddFacultyMutation();
@@ -66,12 +73,59 @@ export default function AddFacultyForm({ onFacultyAdded }) {
     setTaughtCourses(taughtCourses.filter((c) => c !== course));
   };
 
+  // Admin Reviews logic
+  const handleAddOrEditReview = (e) => {
+    e.preventDefault();
+    if (!reviewText.trim() || !reviewRating) {
+      setError("Review text and rating are required.");
+      return;
+    }
+    if (editingReviewIdx !== null) {
+      // Edit existing
+      const updated = [...adminReviews];
+      updated[editingReviewIdx] = {
+        text: reviewText,
+        rating: reviewRating,
+      };
+      setAdminReviews(updated);
+      setEditingReviewIdx(null);
+    } else {
+      // Add new
+      setAdminReviews([
+        ...adminReviews,
+        { text: reviewText, rating: reviewRating },
+      ]);
+    }
+    setReviewText("");
+    setReviewRating(5);
+    setError("");
+  };
+
+  const handleEditReview = (idx) => {
+    setEditingReviewIdx(idx);
+    setReviewText(adminReviews[idx].text);
+    setReviewRating(adminReviews[idx].rating);
+  };
+
+  const handleDeleteReview = (idx) => {
+    setAdminReviews(adminReviews.filter((_, i) => i !== idx));
+    if (editingReviewIdx === idx) {
+      setEditingReviewIdx(null);
+      setReviewText("");
+      setReviewRating(5);
+    }
+  };
+
   const clearForm = () => {
     setInitial("");
     setName("");
     setDepartment("");
     setCourseInput("");
     setTaughtCourses([]);
+    setAdminReviews([]);
+    setReviewText("");
+    setReviewRating(5);
+    setEditingReviewIdx(null);
     setError("");
     setSuccess("");
   };
@@ -90,6 +144,7 @@ export default function AddFacultyForm({ onFacultyAdded }) {
         name,
         department,
         taughtCourses,
+        adminReviews,
       }).unwrap();
       setSuccess("Faculty added successfully!");
       clearForm();
@@ -195,6 +250,86 @@ export default function AddFacultyForm({ onFacultyAdded }) {
           placeholder="Type a course and press Enter"
           maxLength={20}
         />
+      </div>
+      {/* Admin Reviews Section */}
+      <div className="border-t pt-4 mt-2">
+        <label className="block text-md font-semibold text-gray-700 mb-2 flex items-center gap-1">
+          <StarIcon className="h-5 w-5 text-yellow-500" />
+          Optional: Add Admin Reviews & Ratings
+        </label>
+        <div className="flex flex-col gap-2">
+          <div className="flex gap-2 items-center">
+            <input
+              type="number"
+              min={1}
+              max={5}
+              value={reviewRating}
+              onChange={(e) => setReviewRating(Number(e.target.value))}
+              className="w-16 rounded border-gray-300"
+              required
+            />
+            <textarea
+              className="flex-1 rounded border-gray-300 p-2"
+              placeholder="Write a review..."
+              value={reviewText}
+              onChange={(e) => setReviewText(e.target.value)}
+              rows={2}
+              maxLength={300}
+              required
+            />
+            <button
+              type="button"
+              onClick={handleAddOrEditReview}
+              className="flex items-center gap-1 px-2 py-1 rounded bg-blue-500 text-white hover:bg-blue-600"
+            >
+              {editingReviewIdx !== null ? (
+                <>
+                  <PencilIcon className="h-4 w-4" />
+                  Update
+                </>
+              ) : (
+                <>
+                  <PlusCircleIcon className="h-4 w-4" />
+                  Add
+                </>
+              )}
+            </button>
+          </div>
+        </div>
+        {/* List of admin reviews */}
+        {adminReviews.length > 0 && (
+          <ul className="mt-2 space-y-2">
+            {adminReviews.map((review, idx) => (
+              <li
+                key={idx}
+                className="flex items-start gap-2 bg-gray-50 rounded p-2"
+              >
+                <span className="flex items-center gap-1 text-yellow-600 font-bold">
+                  {Array.from({ length: review.rating }).map((_, i) => (
+                    <StarIcon key={i} className="h-4 w-4 inline" />
+                  ))}
+                </span>
+                <span className="flex-1 text-gray-800">{review.text}</span>
+                <button
+                  type="button"
+                  className="ml-2 text-blue-500 hover:text-blue-700"
+                  onClick={() => handleEditReview(idx)}
+                  aria-label="Edit review"
+                >
+                  <PencilIcon className="h-4 w-4" />
+                </button>
+                <button
+                  type="button"
+                  className="ml-1 text-red-500 hover:text-red-700"
+                  onClick={() => handleDeleteReview(idx)}
+                  aria-label="Delete review"
+                >
+                  <TrashIcon className="h-4 w-4" />
+                </button>
+              </li>
+            ))}
+          </ul>
+        )}
       </div>
       {/* Error/Success */}
       {error && (

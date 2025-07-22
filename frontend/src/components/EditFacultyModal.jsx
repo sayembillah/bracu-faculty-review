@@ -1,12 +1,19 @@
 import React, { useState, useEffect } from "react";
 import { Dialog, Transition } from "@headlessui/react";
-import { useUpdateFacultyMutation } from "../redux/apiSlice";
 import {
   AcademicCapIcon,
   XMarkIcon,
   CheckCircleIcon,
   ArrowPathIcon,
+  StarIcon,
+  PencilIcon,
+  TrashIcon,
+  PlusCircleIcon,
 } from "@heroicons/react/24/outline";
+import {
+  useUpdateFacultyMutation,
+  useGetFacultyReviewsQuery,
+} from "../redux/apiSlice";
 
 export default function EditFacultyModal({ open, onClose, faculty }) {
   const [initial, setInitial] = useState("");
@@ -14,10 +21,20 @@ export default function EditFacultyModal({ open, onClose, faculty }) {
   const [department, setDepartment] = useState("");
   const [courseInput, setCourseInput] = useState("");
   const [taughtCourses, setTaughtCourses] = useState([]);
+  const [adminReviews, setAdminReviews] = useState([]);
+  const [reviewText, setReviewText] = useState("");
+  const [reviewRating, setReviewRating] = useState(5);
+  const [editingReviewIdx, setEditingReviewIdx] = useState(null);
+  const [deletedAdminReviewIds, setDeletedAdminReviewIds] = useState([]);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
   const [updateFaculty, { isLoading }] = useUpdateFacultyMutation();
 
+  // Fetch all reviews for this faculty
+  const { data: allReviews, refetch: refetchReviews } =
+    useGetFacultyReviewsQuery(faculty?._id, { skip: !faculty });
+
+  // On open/faculty change, set form fields and admin reviews
   useEffect(() => {
     if (faculty) {
       setInitial(faculty.initial || "");
@@ -27,8 +44,27 @@ export default function EditFacultyModal({ open, onClose, faculty }) {
       setCourseInput("");
       setError("");
       setSuccess("");
+      setReviewText("");
+      setReviewRating(5);
+      setEditingReviewIdx(null);
+      setDeletedAdminReviewIds([]);
+      // Set admin reviews from fetched reviews
+      if (allReviews && Array.isArray(allReviews)) {
+        setAdminReviews(
+          allReviews
+            .filter((r) => r.isAdmin)
+            .map((r) => ({
+              _id: r._id,
+              text: r.text,
+              rating: r.rating,
+            }))
+        );
+      } else {
+        setAdminReviews([]);
+      }
     }
-  }, [faculty, open]);
+    // eslint-disable-next-line
+  }, [faculty, open, allReviews]);
 
   const handleCourseInput = (e) => {
     setCourseInput(e.target.value);
@@ -60,6 +96,54 @@ export default function EditFacultyModal({ open, onClose, faculty }) {
     setTaughtCourses(taughtCourses.filter((c) => c !== course));
   };
 
+  // Admin Reviews logic
+  const handleAddOrEditReview = (e) => {
+    e.preventDefault();
+    if (!reviewText.trim() || !reviewRating) {
+      setError("Review text and rating are required.");
+      return;
+    }
+    if (editingReviewIdx !== null) {
+      // Edit existing
+      const updated = [...adminReviews];
+      updated[editingReviewIdx] = {
+        ...updated[editingReviewIdx],
+        text: reviewText,
+        rating: reviewRating,
+      };
+      setAdminReviews(updated);
+      setEditingReviewIdx(null);
+    } else {
+      // Add new
+      setAdminReviews([
+        ...adminReviews,
+        { text: reviewText, rating: reviewRating },
+      ]);
+    }
+    setReviewText("");
+    setReviewRating(5);
+    setError("");
+  };
+
+  const handleEditReview = (idx) => {
+    setEditingReviewIdx(idx);
+    setReviewText(adminReviews[idx].text);
+    setReviewRating(adminReviews[idx].rating);
+  };
+
+  const handleDeleteReview = (idx) => {
+    const review = adminReviews[idx];
+    if (review._id) {
+      setDeletedAdminReviewIds([...deletedAdminReviewIds, review._id]);
+    }
+    setAdminReviews(adminReviews.filter((_, i) => i !== idx));
+    if (editingReviewIdx === idx) {
+      setEditingReviewIdx(null);
+      setReviewText("");
+      setReviewRating(5);
+    }
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
@@ -68,6 +152,15 @@ export default function EditFacultyModal({ open, onClose, faculty }) {
       setError("All fields are required.");
       return;
     }
+    // Prepare adminReviews payload: include _delete for deleted, _id for existing
+    const adminReviewsPayload = [
+      ...adminReviews.map((r) =>
+        r._id
+          ? { _id: r._id, text: r.text, rating: r.rating }
+          : { text: r.text, rating: r.rating }
+      ),
+      ...deletedAdminReviewIds.map((id) => ({ _id: id, _delete: true })),
+    ];
     try {
       await updateFaculty({
         id: faculty._id,
@@ -75,10 +168,12 @@ export default function EditFacultyModal({ open, onClose, faculty }) {
         name,
         department,
         taughtCourses,
+        adminReviews: adminReviewsPayload,
       }).unwrap();
       setSuccess("Faculty updated successfully!");
       setTimeout(() => {
         onClose();
+        refetchReviews();
       }, 800);
     } catch (err) {
       setError(
@@ -195,6 +290,94 @@ export default function EditFacultyModal({ open, onClose, faculty }) {
                     placeholder="Type a course and press Enter"
                     maxLength={20}
                   />
+                </div>
+                {/* Admin Reviews Section */}
+                <div className="border-t pt-4 mt-2">
+                  <label className="block text-md font-semibold text-gray-700 mb-2 flex items-center gap-1">
+                    <StarIcon className="h-5 w-5 text-yellow-500" />
+                    Admin Reviews & Ratings
+                  </label>
+                  <form
+                    className="flex flex-col gap-2"
+                    onSubmit={handleAddOrEditReview}
+                  >
+                    <div className="flex gap-2 items-center">
+                      <input
+                        type="number"
+                        min={1}
+                        max={5}
+                        value={reviewRating}
+                        onChange={(e) =>
+                          setReviewRating(Number(e.target.value))
+                        }
+                        className="w-16 rounded border-gray-300"
+                        required
+                      />
+                      <textarea
+                        className="flex-1 rounded border-gray-300 p-2"
+                        placeholder="Write a review..."
+                        value={reviewText}
+                        onChange={(e) => setReviewText(e.target.value)}
+                        rows={2}
+                        maxLength={300}
+                        required
+                      />
+                      <button
+                        type="submit"
+                        className="flex items-center gap-1 px-2 py-1 rounded bg-blue-500 text-white hover:bg-blue-600"
+                      >
+                        {editingReviewIdx !== null ? (
+                          <>
+                            <PencilIcon className="h-4 w-4" />
+                            Update
+                          </>
+                        ) : (
+                          <>
+                            <PlusCircleIcon className="h-4 w-4" />
+                            Add
+                          </>
+                        )}
+                      </button>
+                    </div>
+                  </form>
+                  {/* List of admin reviews */}
+                  {adminReviews.length > 0 && (
+                    <ul className="mt-2 space-y-2">
+                      {adminReviews.map((review, idx) => (
+                        <li
+                          key={review._id || idx}
+                          className="flex items-start gap-2 bg-gray-50 rounded p-2"
+                        >
+                          <span className="flex items-center gap-1 text-yellow-600 font-bold">
+                            {Array.from({ length: review.rating }).map(
+                              (_, i) => (
+                                <StarIcon key={i} className="h-4 w-4 inline" />
+                              )
+                            )}
+                          </span>
+                          <span className="flex-1 text-gray-800">
+                            {review.text}
+                          </span>
+                          <button
+                            type="button"
+                            className="ml-2 text-blue-500 hover:text-blue-700"
+                            onClick={() => handleEditReview(idx)}
+                            aria-label="Edit review"
+                          >
+                            <PencilIcon className="h-4 w-4" />
+                          </button>
+                          <button
+                            type="button"
+                            className="ml-1 text-red-500 hover:text-red-700"
+                            onClick={() => handleDeleteReview(idx)}
+                            aria-label="Delete review"
+                          >
+                            <TrashIcon className="h-4 w-4" />
+                          </button>
+                        </li>
+                      ))}
+                    </ul>
+                  )}
                 </div>
                 {/* Error/Success */}
                 {error && (
