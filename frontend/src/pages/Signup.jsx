@@ -11,7 +11,8 @@ const Signup = () => {
   const [retypePassword, setRetypePassword] = useState("");
   const [invitationCode, setInvitationCode] = useState("");
   const [showPassword, setShowPassword] = useState(false);
-  const [signUpUser, { isLoading, error }] = useSignUpUserMutation();
+  const [signUpUser, { isLoading }] = useSignUpUserMutation();
+  const [formError, setFormError] = useState("");
   const navigate = useNavigate();
 
   const [isAdmin, setIsAdmin] = useState(false); // toggle to show invitation field
@@ -24,9 +25,28 @@ const Signup = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setFormError("");
 
+    // Email regex
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!name.trim() || !email.trim() || !password || !retypePassword) {
+      setFormError("All fields are required.");
+      return;
+    }
+    if (!emailRegex.test(email)) {
+      setFormError("Please enter a valid email address.");
+      return;
+    }
+    if (password.length < 8) {
+      setFormError("Password must be at least 8 characters long.");
+      return;
+    }
     if (password !== retypePassword) {
-      alert("Passwords do not match.");
+      setFormError("Passwords do not match.");
+      return;
+    }
+    if (isAdmin && !invitationCode.trim()) {
+      setFormError("Invitation code is required for admin signup.");
       return;
     }
 
@@ -37,20 +57,19 @@ const Signup = () => {
       adminInvitationToken: isAdmin ? invitationCode : null,
     };
 
-    console.log("Signup payload:", payload);
-    // Here you'd dispatch a signup mutation or call API
     try {
-      const res = await signUpUser(payload).unwrap();
+      await signUpUser(payload).unwrap();
       notifySuccess();
       navigate("/login");
-
-      // handle success (e.g., redirect, show message)
     } catch (err) {
       if (err.status === 400) {
+        setFormError("User already exists.");
         notifyAlreadyExist();
       } else if (err.status === 498) {
+        setFormError("Invalid Admin Invitation Token.");
         notifyInvalidToken();
       } else {
+        setFormError("There was an error creating an account.");
         notifyFailure();
       }
       console.log(err);
@@ -64,6 +83,11 @@ const Signup = () => {
           Create an Account
         </h2>
         <Toaster />
+        {formError && (
+          <div className="mb-2 text-red-600 text-sm font-medium text-center">
+            {formError}
+          </div>
+        )}
         <form onSubmit={handleSubmit} className="space-y-4">
           {/* Name */}
           <div>
