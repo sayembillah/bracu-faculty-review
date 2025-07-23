@@ -266,7 +266,6 @@ export default function AddFacultyForm({ onFacultyAdded }) {
               value={reviewRating}
               onChange={(e) => setReviewRating(Number(e.target.value))}
               className="w-16 rounded border-gray-300"
-              required
             />
             <textarea
               className="flex-1 rounded border-gray-300 p-2"
@@ -275,7 +274,6 @@ export default function AddFacultyForm({ onFacultyAdded }) {
               onChange={(e) => setReviewText(e.target.value)}
               rows={2}
               maxLength={300}
-              required
             />
             <button
               type="button"

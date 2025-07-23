@@ -12,9 +12,10 @@ const generateToken = (userId) => {
 export const registerUser = async (req, res) => {
   try {
     const { name, email, password, adminInvitationToken } = req.body;
+    const emailLower = email.toLowerCase();
 
     // Checking if the user already exist
-    const userExists = await User.findOne({ email });
+    const userExists = await User.findOne({ email: emailLower });
     if (userExists) {
       return res.status(400).json({ message: "User already exist" });
     }
@@ -41,7 +42,7 @@ export const registerUser = async (req, res) => {
     // Create new user
     const user = await User.create({
       name,
-      email,
+      email: emailLower,
       password: hashedPassword,
       role,
     });
@@ -70,8 +71,9 @@ export const registerUser = async (req, res) => {
 export const loginUser = async (req, res) => {
   try {
     const { email, password } = req.body; // extract credential from request
+    const emailLower = email.toLowerCase();
 
-    const user = await User.findOne({ email }); // find user by email from database
+    const user = await User.findOne({ email: emailLower }); // find user by email from database
 
     if (!user) {
       return res.status(401).json({ message: "Invalid email or password" });

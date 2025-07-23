@@ -16,7 +16,13 @@ dotenv.config();
 const app = express();
 
 //Middleware to handle cors
-app.use(cors());
+// Allow both localhost:7000 and localhost:7001 for dev
+app.use(
+  cors({
+    origin: ["http://localhost:7000", "http://localhost:7001"],
+    credentials: true,
+  })
+);
 
 //Middleware to parse json
 app.use(express.json());

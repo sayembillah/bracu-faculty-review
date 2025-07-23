@@ -1,5 +1,8 @@
 import express from "express";
-import { getMyNotifications } from "../controllers/notificationController.js";
+import {
+  getMyNotifications,
+  deleteNotification,
+} from "../controllers/notificationController.js";
 import authMiddleware from "../middleware/authMiddleware.js";
 
 const router = express.Router();
@@ -10,5 +13,12 @@ const router = express.Router();
  * @access  Private
  */
 router.get("/user/notifications/my", authMiddleware, getMyNotifications);
+
+/**
+ * @route   DELETE /api/user/notifications/:id
+ * @desc    Delete a notification by ID
+ * @access  Private
+ */
+router.delete("/user/notifications/:id", authMiddleware, deleteNotification);
 
 export default router;

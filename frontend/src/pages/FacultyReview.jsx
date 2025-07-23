@@ -278,14 +278,74 @@ const FacultyReview = () => {
                           <HandThumbDownIcon className="h-5 w-5" />
                           <LikeCount value={review.dislikes?.length || 0} />
                         </button>
-                        {/* Flag Button (disabled) */}
+                        {/* Flag Button */}
                         <button
-                          className="flex items-center gap-1 px-3 py-1 rounded-full text-sm font-medium bg-gray-100 text-gray-400 cursor-not-allowed opacity-60"
-                          disabled
-                          title="Flagging will be available soon"
+                          className={`flex items-center gap-1 px-3 py-1 rounded-full text-sm font-medium transition ${
+                            review.flags?.some?.((f) => f.user === userId)
+                              ? "bg-yellow-100 text-yellow-600 cursor-not-allowed opacity-60"
+                              : "bg-gray-100 text-gray-500 hover:bg-yellow-50"
+                          }`}
+                          disabled={
+                            !userId ||
+                            review.flags?.some?.((f) => f.user === userId)
+                          }
+                          onClick={async () => {
+                            if (!userId) {
+                              alert("Please log in to flag a review.");
+                              window.location.href = "/login";
+                              return;
+                            }
+                            if (
+                              review.flags?.some?.((f) => f.user === userId)
+                            ) {
+                              alert("You have already flagged this review.");
+                              return;
+                            }
+                            try {
+                              const res = await fetch(
+                                `http://192.168.0.200:4000/api/reviews/${review._id}/flag`,
+                                {
+                                  method: "POST",
+                                  headers: {
+                                    "Content-Type": "application/json",
+                                    Authorization: `Bearer ${
+                                      JSON.parse(
+                                        localStorage.getItem("authData") || "{}"
+                                      ).token || ""
+                                    }`,
+                                  },
+                                }
+                              );
+                              const data = await res.json();
+                              if (res.ok) {
+                                alert("Review flagged for admin review.");
+                                refetch();
+                              } else {
+                                alert(
+                                  data?.message ||
+                                    "Failed to flag review. Try again."
+                                );
+                              }
+                            } catch {
+                              alert("Failed to flag review. Try again.");
+                            }
+                          }}
+                          title={
+                            review.flags?.some?.((f) => f.user === userId)
+                              ? "You have already flagged this review"
+                              : !userId
+                              ? "Login to flag"
+                              : "Flag as inappropriate"
+                          }
                         >
                           <FlagIcon className="h-5 w-5" />
-                          <span>Flag</span>
+                          <span>
+                            {review.flags?.length > 0
+                              ? `Flag${review.flags.length > 1 ? "s" : ""} (${
+                                  review.flags.length
+                                })`
+                              : "Flag"}
+                          </span>
                         </button>
                       </div>
                     </div>

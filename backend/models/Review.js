@@ -9,6 +9,12 @@ const reviewSchema = new mongoose.Schema({
   createdAt: { type: Date, default: Date.now },
   likes: [{ type: mongoose.Schema.Types.ObjectId, ref: "User" }],
   dislikes: [{ type: mongoose.Schema.Types.ObjectId, ref: "User" }],
+  flags: [
+    {
+      user: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
+      createdAt: { type: Date, default: Date.now },
+    },
+  ],
 });
 
 export default mongoose.model("Review", reviewSchema);

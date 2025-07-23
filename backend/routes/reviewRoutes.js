@@ -6,6 +6,7 @@ import {
   deleteReview,
   likeReview,
   dislikeReview,
+  flagReview,
 } from "../controllers/reviewController.js";
 import authMiddleware from "../middleware/authMiddleware.js";
 
@@ -48,5 +49,12 @@ router.post("/reviews/:id/like", authMiddleware, likeReview);
  * @access  Private
  */
 router.post("/reviews/:id/dislike", authMiddleware, dislikeReview);
+
+/**
+ * @route   POST /api/reviews/:id/flag
+ * @desc    Flag a review (report)
+ * @access  Private
+ */
+router.post("/reviews/:id/flag", authMiddleware, flagReview);
 
 export default router;

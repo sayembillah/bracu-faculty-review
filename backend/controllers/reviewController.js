@@ -1,5 +1,6 @@
 import Review from "../models/Review.js";
 import Faculty from "../models/Faculty.js";
+import Notification from "../models/Notification.js";
 import { logActivity } from "./activityController.js";
 
 // Create a new review
@@ -215,6 +216,60 @@ export const dislikeReview = async (req, res) => {
       "name email"
     );
     res.json(populated);
+  } catch (error) {
+    res.status(500).json({ message: "Server Error", error: error.message });
+  }
+};
+
+/**
+ * Flag a review (report)
+ * POST /api/reviews/:id/flag
+ */
+export const flagReview = async (req, res) => {
+  try {
+    const userId = req.user._id;
+    const reviewId = req.params.id;
+
+    const review = await Review.findById(reviewId).populate("user", "name");
+    if (!review) {
+      return res.status(404).json({ message: "Review not found" });
+    }
+
+    // Prevent duplicate flag by same user
+    if (review.flags.some((f) => f.user.toString() === userId.toString())) {
+      return res
+        .status(400)
+        .json({ message: "You have already flagged this review." });
+    }
+
+    review.flags.push({ user: userId });
+    await review.save();
+
+    // Create admin notification for each admin user
+    const admins = await (
+      await import("../models/User.js")
+    ).default.find({ role: "admin" });
+    console.log(
+      "FlagReview: Found admin users:",
+      admins.map((a) => ({ _id: a._id, name: a.name, email: a.email }))
+    );
+    for (const admin of admins) {
+      const notif = await Notification.create({
+        type: "flag",
+        message: `${req.user.name} has flagged a review. Please review it.`,
+        review: reviewId,
+        user: admin._id,
+        createdAt: new Date(),
+        isRead: false,
+      });
+      console.log(
+        "FlagReview: Created notification for admin",
+        admin._id,
+        notif._id
+      );
+    }
+
+    res.json({ message: "Review flagged successfully" });
   } catch (error) {
     res.status(500).json({ message: "Server Error", error: error.message });
   }

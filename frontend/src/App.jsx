@@ -45,9 +45,22 @@ const App = () => {
       }
       localStorage.setItem("visitorId", visitorId);
     }
-    fetch("/api/visitor", {
+    // Send visitor log to backend with correct base URL and optional auth
+    const authData = localStorage.getItem("authData");
+    let token;
+    if (authData) {
+      try {
+        token = JSON.parse(authData).token;
+      } catch (e) {
+        token = null;
+      }
+    }
+    fetch("http://192.168.0.200:4000/api/visitor", {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: {
+        "Content-Type": "application/json",
+        ...(token ? { Authorization: `Bearer ${token}` } : {}),
+      },
       body: JSON.stringify({ visitorId }),
     }).catch(() => {});
   }, []);
