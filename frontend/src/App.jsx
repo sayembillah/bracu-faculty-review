@@ -17,6 +17,7 @@ import FacultyReview from "./pages/FacultyReview";
 import AdminUser from "./pages/AdminUser";
 import AdminFaculty from "./pages/AdminFaculty";
 import AdminReview from "./pages/AdminReview";
+import Courses from "./pages/Courses";
 import { Toaster } from "react-hot-toast";
 
 const App = () => {
@@ -73,6 +74,7 @@ const App = () => {
       <Toaster position="top-right" />
       <Routes>
         <Route path="/" element={<Home />} />
+        <Route path="/courses" element={<Courses />} />
         <Route path="/faculty/:id" element={<FacultyReview />} />
         <Route path="/login" element={<Login />} />
         <Route path="/signup" element={<Signup />} />

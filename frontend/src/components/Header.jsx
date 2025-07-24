@@ -32,10 +32,10 @@ const Header = () => {
                 Reviews
               </Link>
               <Link
-                to="/about"
+                to="/courses"
                 className="text-gray-700 hover:text-blue-600 text-sm font-medium transition"
               >
-                About
+                Courses
               </Link>
               <Link
                 to="/privacy"
