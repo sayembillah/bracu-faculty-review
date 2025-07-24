@@ -12,6 +12,7 @@ import {
   HandThumbUpIcon,
   SparklesIcon,
 } from "@heroicons/react/24/outline";
+import { motion, AnimatePresence } from "framer-motion";
 
 const features = [
   {
@@ -68,7 +69,12 @@ const Home = () => {
       <Header />
       {/* HERO BG */}
       <section className="hero-gradient-bg py-12">
-        <div className="max-w-2xl mx-auto px-4 text-center">
+        <motion.div
+          className="max-w-2xl mx-auto px-4 text-center"
+          initial={{ opacity: 0, y: 40 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.7, type: "spring", stiffness: 70 }}
+        >
           <div className="flex justify-center mb-2">
             {/* AcademicCapIcon from Heroicons */}
             <svg
@@ -101,30 +107,42 @@ const Home = () => {
               onChange={(e) => setSearch(e.target.value)}
               autoComplete="off"
             />
-            {search && (
-              <div className="absolute left-0 right-0 mt-2 bg-white border border-gray-200 rounded-lg shadow-lg z-10 max-h-60 overflow-y-auto">
-                {isLoading ? (
-                  <div className="py-2 text-gray-500">Loading...</div>
-                ) : filteredFaculties.length > 0 ? (
-                  filteredFaculties.map((faculty) => (
-                    <div
-                      key={faculty._id}
-                      className="px-4 py-2 text-left hover:bg-blue-50 cursor-pointer transition"
-                      onClick={() => navigate(`/faculty/${faculty._id}`)}
-                    >
-                      {faculty.name} ({faculty.initial})
-                    </div>
-                  ))
-                ) : (
-                  <div className="py-2 text-gray-500">No faculty found.</div>
-                )}
-              </div>
-            )}
+            <AnimatePresence>
+              {search && (
+                <motion.div
+                  className="absolute left-0 right-0 mt-2 bg-white border border-gray-200 rounded-lg shadow-lg z-10 max-h-60 overflow-y-auto"
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: 10 }}
+                  transition={{ duration: 0.25 }}
+                >
+                  {isLoading ? (
+                    <div className="py-2 text-gray-500">Loading...</div>
+                  ) : filteredFaculties.length > 0 ? (
+                    filteredFaculties.map((faculty, idx) => (
+                      <motion.div
+                        key={faculty._id}
+                        className="px-4 py-2 text-left hover:bg-blue-50 cursor-pointer transition"
+                        onClick={() => navigate(`/faculty/${faculty._id}`)}
+                        initial={{ opacity: 0, x: 20 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        exit={{ opacity: 0, x: 20 }}
+                        transition={{ duration: 0.18, delay: idx * 0.03 }}
+                      >
+                        {faculty.name} ({faculty.initial})
+                      </motion.div>
+                    ))
+                  ) : (
+                    <div className="py-2 text-gray-500">No faculty found.</div>
+                  )}
+                </motion.div>
+              )}
+            </AnimatePresence>
           </div>
           <p className="text-sm text-gray-500 mt-4">
             please be respectful of your words.
           </p>
-        </div>
+        </motion.div>
       </section>
 
       {/* WHY CHOOSE SECTION */}
@@ -138,11 +156,36 @@ const Home = () => {
               Simple yet really useful for the students of BRAC University.
             </p>
           </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-            {features.map((feature) => (
-              <div
+          <motion.div
+            className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6"
+            initial="hidden"
+            animate="visible"
+            variants={{
+              hidden: {},
+              visible: {
+                transition: {
+                  staggerChildren: 0.08,
+                },
+              },
+            }}
+          >
+            {features.map((feature, idx) => (
+              <motion.div
                 key={feature.title}
                 className="bg-gray-50 rounded-xl shadow-sm p-6 flex flex-col items-start hover:shadow-md transition"
+                initial={{ opacity: 0, y: 30, scale: 0.97 }}
+                animate={{ opacity: 1, y: 0, scale: 1 }}
+                transition={{
+                  duration: 0.45,
+                  delay: idx * 0.07,
+                  type: "spring",
+                  stiffness: 90,
+                }}
+                whileHover={{
+                  scale: 1.03,
+                  boxShadow: "0 4px 24px rgba(59,130,246,0.08)",
+                }}
+                layout
               >
                 <div className="bg-blue-100 rounded-lg p-2 mb-4">
                   <feature.icon className="h-7 w-7 text-blue-500" />
@@ -151,9 +194,9 @@ const Home = () => {
                   {feature.title}
                 </h3>
                 <p className="text-gray-600 text-sm">{feature.description}</p>
-              </div>
+              </motion.div>
             ))}
-          </div>
+          </motion.div>
         </div>
       </section>
     </>

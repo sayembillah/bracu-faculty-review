@@ -3,6 +3,7 @@ import {
   useGetFacultiesQuery,
   useGetAdminMetricsQuery,
 } from "../redux/apiSlice";
+import NotificationsPanel from "./NotificationsPanel";
 import {
   UserGroupIcon,
   AcademicCapIcon,
@@ -12,6 +13,7 @@ import {
 import { Tab } from "@headlessui/react";
 import { useGetRecentActivitiesQuery } from "../redux/apiSlice";
 import { ClockIcon } from "@heroicons/react/24/outline";
+import { motion, AnimatePresence } from "framer-motion";
 
 const cardData = (metrics, loading) => [
   {
@@ -60,16 +62,28 @@ const AdminDashboard = () => {
       </div>
       <div className="border border-gray-200 rounded-2xl bg-white/50 shadow-sm p-6 mb-4">
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-          {cardData(metricsData, metricsLoading).map((card) => (
-            <div
-              key={card.title}
-              className={`rounded-xl shadow-md p-6 flex flex-col items-center ${card.bg} transition hover:scale-105 hover:shadow-lg`}
-            >
-              <div className="mb-2">{card.icon}</div>
-              <div className="text-2xl font-semibold">{card.value}</div>
-              <div className="text-gray-600 mt-1">{card.title}</div>
-            </div>
-          ))}
+          <AnimatePresence>
+            {cardData(metricsData, metricsLoading).map((card, idx) => (
+              <motion.div
+                key={card.title}
+                className={`rounded-xl shadow-md p-6 flex flex-col items-center ${card.bg} transition hover:scale-105 hover:shadow-lg`}
+                initial={{ opacity: 0, y: 30, scale: 0.95 }}
+                animate={{ opacity: 1, y: 0, scale: 1 }}
+                exit={{ opacity: 0, y: 30, scale: 0.95 }}
+                transition={{
+                  duration: 0.5,
+                  delay: idx * 0.08,
+                  type: "spring",
+                  stiffness: 80,
+                }}
+                layout
+              >
+                <div className="mb-2">{card.icon}</div>
+                <div className="text-2xl font-semibold">{card.value}</div>
+                <div className="text-gray-600 mt-1">{card.title}</div>
+              </motion.div>
+            ))}
+          </AnimatePresence>
         </div>
       </div>
       {/* Tabs Section */}
@@ -93,22 +107,43 @@ const AdminDashboard = () => {
             ))}
           </Tab.List>
           <Tab.Panels className="mt-4">
-            {/* Activities Tab */}
-            <Tab.Panel>
-              <ActivitiesTab />
-            </Tab.Panel>
-            {/* Notification Tab */}
-            <Tab.Panel>
-              <div className="text-center text-gray-400 py-8">
-                No notifications yet.
-              </div>
-            </Tab.Panel>
-            {/* Requests Tab */}
-            <Tab.Panel>
-              <div className="text-center text-gray-400 py-8">
-                No requests at this time.
-              </div>
-            </Tab.Panel>
+            <AnimatePresence mode="wait">
+              {/* Activities Tab */}
+              <Tab.Panel key="activities">
+                <motion.div
+                  initial={{ opacity: 0, x: -30 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  exit={{ opacity: 0, x: 30 }}
+                  transition={{ duration: 0.35, type: "tween" }}
+                >
+                  <ActivitiesTab />
+                </motion.div>
+              </Tab.Panel>
+              {/* Notification Tab */}
+              <Tab.Panel key="notifications">
+                <motion.div
+                  initial={{ opacity: 0, x: 30 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  exit={{ opacity: 0, x: -30 }}
+                  transition={{ duration: 0.35, type: "tween" }}
+                >
+                  <NotificationsPanel />
+                </motion.div>
+              </Tab.Panel>
+              {/* Requests Tab */}
+              <Tab.Panel key="requests">
+                <motion.div
+                  initial={{ opacity: 0, y: 30 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -30 }}
+                  transition={{ duration: 0.35, type: "tween" }}
+                >
+                  <div className="text-center text-gray-400 py-8">
+                    No requests at this time.
+                  </div>
+                </motion.div>
+              </Tab.Panel>
+            </AnimatePresence>
           </Tab.Panels>
         </Tab.Group>
       </div>

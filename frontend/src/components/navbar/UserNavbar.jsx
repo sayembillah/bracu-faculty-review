@@ -8,6 +8,7 @@ import {
   HomeIcon,
   Squares2X2Icon,
 } from "@heroicons/react/24/outline";
+import { motion, AnimatePresence } from "framer-motion";
 import { useNavigate, Link, useLocation } from "react-router-dom";
 import { useDispatch } from "react-redux";
 import { logout } from "../../redux/authSlice";
@@ -143,12 +144,28 @@ const UserNavbar = ({ onReviewAdded }) => {
 
                 {/* === Mobile Menu Button === */}
                 <div className="flex md:hidden">
-                  <Disclosure.Button className="inline-flex items-center justify-center rounded-md p-2 text-white hover:bg-blue-600 focus:outline-none">
-                    {open ? (
-                      <XMarkIcon className="block h-6 w-6" />
-                    ) : (
-                      <Bars3Icon className="block h-6 w-6" />
-                    )}
+                  <Disclosure.Button className="inline-flex items-center justify-center rounded-md p-2 bg-white border border-gray-300 shadow text-black hover:bg-gray-100 focus:outline-none transition">
+                    <motion.span
+                      key={open ? "open" : "closed"}
+                      initial={{ rotate: 0, scale: 1 }}
+                      animate={
+                        open
+                          ? { rotate: 90, scale: 1.2 }
+                          : { rotate: 0, scale: 1 }
+                      }
+                      transition={{
+                        type: "spring",
+                        stiffness: 300,
+                        damping: 20,
+                      }}
+                      style={{ display: "flex" }}
+                    >
+                      {open ? (
+                        <XMarkIcon className="block h-6 w-6 text-black" />
+                      ) : (
+                        <Bars3Icon className="block h-6 w-6 text-black" />
+                      )}
+                    </motion.span>
                   </Disclosure.Button>
                 </div>
 
@@ -224,73 +241,88 @@ const UserNavbar = ({ onReviewAdded }) => {
             </div>
 
             {/* === Mobile Menu Panel === */}
-            <Disclosure.Panel className="md:hidden px-4 pt-2 pb-4 space-y-2 bg-white shadow-md">
-              {/* Only show Write Review button on /user/dashboard */}
-              {me && isDashboardPage && (
-                <>
-                  <button
-                    onClick={openModal}
-                    className="block w-full text-left text-sm font-medium bg-white hover:shadow-md px-3 py-2 rounded-md text-gray-700 flex items-center gap-2"
-                  >
-                    <PencilSquareIcon className="h-5 w-5" />
-                    Write Review
-                  </button>
-                  <Link
-                    to="/"
-                    className="block w-full text-left text-sm font-medium bg-white hover:shadow-md px-3 py-2 rounded-md text-gray-700 flex items-center gap-2"
-                  >
-                    <HomeIcon className="h-5 w-5" />
-                    See Review
-                  </Link>
-                </>
-              )}
-              {/* Show See Reviews button only on /user */}
-              {me && isDashboardHome && (
-                <Link
-                  to="/"
-                  className="block w-full text-left text-sm font-medium bg-white hover:shadow-md px-3 py-2 rounded-md text-gray-700 flex items-center gap-2"
+            <AnimatePresence>
+              {open && (
+                <motion.div
+                  className="md:hidden px-4 pt-2 pb-4 space-y-2 bg-white shadow-md"
+                  key="mobile-menu"
+                  initial={{ opacity: 0, y: -20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -20, transition: { duration: 0.22 } }}
+                  transition={{
+                    duration: 0.25,
+                    type: "spring",
+                    stiffness: 120,
+                  }}
                 >
-                  <HomeIcon className="h-5 w-5" />
-                  See Reviews
-                </Link>
+                  {/* Only show Write Review button on /user/dashboard */}
+                  {me && isDashboardPage && (
+                    <>
+                      <button
+                        onClick={openModal}
+                        className="block w-full text-left text-sm font-medium bg-white hover:shadow-md px-3 py-2 rounded-md text-gray-700 flex items-center gap-2"
+                      >
+                        <PencilSquareIcon className="h-5 w-5" />
+                        Write Review
+                      </button>
+                      <Link
+                        to="/"
+                        className="block w-full text-left text-sm font-medium bg-white hover:shadow-md px-3 py-2 rounded-md text-gray-700 flex items-center gap-2"
+                      >
+                        <HomeIcon className="h-5 w-5" />
+                        See Review
+                      </Link>
+                    </>
+                  )}
+                  {/* Show See Reviews button only on /user */}
+                  {me && isDashboardHome && (
+                    <Link
+                      to="/"
+                      className="block w-full text-left text-sm font-medium bg-white hover:shadow-md px-3 py-2 rounded-md text-gray-700 flex items-center gap-2"
+                    >
+                      <HomeIcon className="h-5 w-5" />
+                      See Reviews
+                    </Link>
+                  )}
+                  {/* Show Dashboard button with icon on all pages except /user/dashboard */}
+                  {me && !isDashboardPage && (
+                    <Link
+                      to="/user/dashboard"
+                      className="block w-full text-left text-sm font-medium bg-white hover:shadow-md px-3 py-2 rounded-md text-gray-700 flex items-center gap-2"
+                    >
+                      <Squares2X2Icon className="h-5 w-5" />
+                      Dashboard
+                    </Link>
+                  )}
+                  {/* === Auth Buttons (mobile) === */}
+                  {!me ? (
+                    <>
+                      <Link
+                        to="/login"
+                        className="block w-full text-left px-4 py-2 rounded-md text-sm font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 transition"
+                      >
+                        Sign In
+                      </Link>
+                      <Link
+                        to="/signup"
+                        className="block w-full text-left px-4 py-2 rounded-md text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 transition"
+                      >
+                        Sign Up
+                      </Link>
+                    </>
+                  ) : (
+                    <button
+                      onClick={handleLogout}
+                      className="flex items-center gap-2 w-full text-left text-sm font-medium bg-red-500 hover:bg-red-600 px-3 py-2 rounded-md text-white"
+                      title="Logout"
+                    >
+                      <ArrowRightOnRectangleIcon className="h-5 w-5" />
+                      Logout
+                    </button>
+                  )}
+                </motion.div>
               )}
-              {/* Show Dashboard button with icon on all pages except /user/dashboard */}
-              {me && !isDashboardPage && (
-                <Link
-                  to="/user/dashboard"
-                  className="block w-full text-left text-sm font-medium bg-white hover:shadow-md px-3 py-2 rounded-md text-gray-700 flex items-center gap-2"
-                >
-                  <Squares2X2Icon className="h-5 w-5" />
-                  Dashboard
-                </Link>
-              )}
-              {/* === Auth Buttons (mobile) === */}
-              {!me ? (
-                <>
-                  <Link
-                    to="/login"
-                    className="block w-full text-left px-4 py-2 rounded-md text-sm font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 transition"
-                  >
-                    Sign In
-                  </Link>
-                  <Link
-                    to="/signup"
-                    className="block w-full text-left px-4 py-2 rounded-md text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 transition"
-                  >
-                    Sign Up
-                  </Link>
-                </>
-              ) : (
-                <button
-                  onClick={handleLogout}
-                  className="flex items-center gap-2 w-full text-left text-sm font-medium bg-red-500 hover:bg-red-600 px-3 py-2 rounded-md text-white"
-                  title="Logout"
-                >
-                  <ArrowRightOnRectangleIcon className="h-5 w-5" />
-                  Logout
-                </button>
-              )}
-            </Disclosure.Panel>
+            </AnimatePresence>
           </>
         )}
       </Disclosure>
