@@ -57,10 +57,10 @@ const Home = () => {
   });
   const navigate = useNavigate();
 
-  // Filter faculties by name or initials (case-insensitive)
+  // Filter faculties by initials (case-insensitive)
   const filteredFaculties = faculties.filter(
     (faculty) =>
-      faculty.name.toLowerCase().includes(search.toLowerCase()) ||
+      faculty.initial &&
       faculty.initial.toLowerCase().includes(search.toLowerCase())
   );
 
@@ -96,7 +96,7 @@ const Home = () => {
             BRACU Faculty Review
           </h1>
           <p className="text-lg text-gray-700 mb-8">
-            Search Faculty name or their Initials to get started.
+            Search Faculty Initials to get started.
           </p>
           <div className="relative mb-4">
             <input
@@ -129,7 +129,7 @@ const Home = () => {
                         exit={{ opacity: 0, x: 20 }}
                         transition={{ duration: 0.18, delay: idx * 0.03 }}
                       >
-                        {faculty.name} ({faculty.initial})
+                        {faculty.initial}
                       </motion.div>
                     ))
                   ) : (

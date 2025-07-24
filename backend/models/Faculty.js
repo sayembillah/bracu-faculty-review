@@ -1,7 +1,6 @@
 import mongoose from "mongoose";
 
 const facultySchema = new mongoose.Schema({
-  name: String,
   initial: { type: String, unique: true },
   department: String,
   courses: { type: [String], default: [] },

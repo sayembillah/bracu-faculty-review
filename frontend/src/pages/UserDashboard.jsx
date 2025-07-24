@@ -82,7 +82,7 @@ const UserDashboard = () => {
                         layout
                       >
                         <span className="font-medium text-gray-800">
-                          {faculty.name}
+                          {faculty.initial}
                         </span>
                         <div className="flex items-center gap-2">
                           <button

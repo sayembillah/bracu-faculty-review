@@ -17,6 +17,7 @@ import FacultyReview from "./pages/FacultyReview";
 import AdminUser from "./pages/AdminUser";
 import AdminFaculty from "./pages/AdminFaculty";
 import AdminReview from "./pages/AdminReview";
+import { Toaster } from "react-hot-toast";
 
 const App = () => {
   const dispatch = useDispatch();
@@ -69,6 +70,7 @@ const App = () => {
 
   return (
     <BrowserRouter>
+      <Toaster position="top-right" />
       <Routes>
         <Route path="/" element={<Home />} />
         <Route path="/faculty/:id" element={<FacultyReview />} />

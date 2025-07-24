@@ -99,7 +99,7 @@ const AdminReview = () => {
               {flagged.map((review) => (
                 <tr key={review._id} className="hover:bg-yellow-50 transition">
                   <td className="px-4 py-3">
-                    {review.faculty?.name || "Unknown"}
+                    {review.faculty?.initial || "Unknown"}
                   </td>
                   <td className="px-4 py-3">
                     {review.user?.name || "Anonymous"}

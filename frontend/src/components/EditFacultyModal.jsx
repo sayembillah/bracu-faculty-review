@@ -17,7 +17,6 @@ import {
 
 export default function EditFacultyModal({ open, onClose, faculty }) {
   const [initial, setInitial] = useState("");
-  const [name, setName] = useState("");
   const [department, setDepartment] = useState("");
   const [courseInput, setCourseInput] = useState("");
   const [taughtCourses, setTaughtCourses] = useState([]);
@@ -38,7 +37,6 @@ export default function EditFacultyModal({ open, onClose, faculty }) {
   useEffect(() => {
     if (faculty) {
       setInitial(faculty.initial || "");
-      setName(faculty.name || "");
       setDepartment(faculty.department || "");
       setTaughtCourses(faculty.courses || faculty.taughtCourses || []);
       setCourseInput("");
@@ -148,10 +146,22 @@ export default function EditFacultyModal({ open, onClose, faculty }) {
     e.preventDefault();
     setError("");
     setSuccess("");
-    if (!initial || !name || !department || taughtCourses.length === 0) {
+    // Filter out empty/whitespace courses
+    const filteredCourses = taughtCourses.filter(
+      (c) => typeof c === "string" && c.trim().length > 0
+    );
+    console.log("Submitting faculty update:", {
+      initial,
+      department,
+      filteredCourses,
+      adminReviews,
+    });
+    if (!initial || !department || filteredCourses.length === 0) {
       setError("All fields are required.");
       return;
     }
+    // Do not require reviewText/reviewRating unless actively adding/editing a review
+    // (i.e., only validate reviewText/reviewRating in handleAddOrEditReview)
     // Prepare adminReviews payload: include _delete for deleted, _id for existing
     const adminReviewsPayload = [
       ...adminReviews.map((r) =>
@@ -162,20 +172,22 @@ export default function EditFacultyModal({ open, onClose, faculty }) {
       ...deletedAdminReviewIds.map((id) => ({ _id: id, _delete: true })),
     ];
     try {
-      await updateFaculty({
+      const payload = {
         id: faculty._id,
         initial,
-        name,
         department,
-        taughtCourses,
+        courses: filteredCourses,
         adminReviews: adminReviewsPayload,
-      }).unwrap();
+      };
+      console.log("Payload sent to updateFaculty:", payload);
+      await updateFaculty(payload).unwrap();
       setSuccess("Faculty updated successfully!");
       setTimeout(() => {
         onClose();
         refetchReviews();
       }, 800);
     } catch (err) {
+      console.error("Update faculty error:", err);
       setError(
         err?.data?.message ||
           "Failed to update faculty. Please check your input and try again."
@@ -229,20 +241,7 @@ export default function EditFacultyModal({ open, onClose, faculty }) {
                     required
                   />
                 </div>
-                {/* Name */}
-                <div>
-                  <label className="block text-sm font-medium text-gray-700">
-                    Name
-                  </label>
-                  <input
-                    type="text"
-                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:ring-blue-500 focus:border-blue-500"
-                    value={name}
-                    onChange={(e) => setName(e.target.value)}
-                    maxLength={100}
-                    required
-                  />
-                </div>
+                {/* Name field removed */}
                 {/* Department */}
                 <div>
                   <label className="block text-sm font-medium text-gray-700">
@@ -297,10 +296,7 @@ export default function EditFacultyModal({ open, onClose, faculty }) {
                     <StarIcon className="h-5 w-5 text-yellow-500" />
                     Admin Reviews & Ratings
                   </label>
-                  <form
-                    className="flex flex-col gap-2"
-                    onSubmit={handleAddOrEditReview}
-                  >
+                  <div className="flex flex-col gap-2">
                     <div className="flex gap-2 items-center">
                       <input
                         type="number"
@@ -321,8 +317,9 @@ export default function EditFacultyModal({ open, onClose, faculty }) {
                         maxLength={300}
                       />
                       <button
-                        type="submit"
+                        type="button"
                         className="flex items-center gap-1 px-2 py-1 rounded bg-blue-500 text-white hover:bg-blue-600"
+                        onClick={handleAddOrEditReview}
                       >
                         {editingReviewIdx !== null ? (
                           <>
@@ -337,7 +334,7 @@ export default function EditFacultyModal({ open, onClose, faculty }) {
                         )}
                       </button>
                     </div>
-                  </form>
+                  </div>
                   {/* List of admin reviews */}
                   {adminReviews.length > 0 && (
                     <ul className="mt-2 space-y-2">

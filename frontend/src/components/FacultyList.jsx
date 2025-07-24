@@ -47,7 +47,7 @@ function getRatingColor(rating) {
   return "text-gray-400";
 }
 
-export default function FacultyList({ onEditFaculty }) {
+export default function FacultyList({ onEditFaculty, searchQuery }) {
   const { data: faculties = [], isLoading } = useGetFacultiesQuery();
   const [deleteFaculty] = useDeleteFacultyMutation();
   const [filterDept, setFilterDept] = useState("All");
@@ -60,6 +60,15 @@ export default function FacultyList({ onEditFaculty }) {
   // Filter and sort faculties
   const filteredFaculties = useMemo(() => {
     let list = faculties;
+    // Filter by search query (initial or department, case-insensitive)
+    if (searchQuery && searchQuery.trim() !== "") {
+      const q = searchQuery.trim().toLowerCase();
+      list = list.filter(
+        (f) =>
+          f.initial.toLowerCase().includes(q) ||
+          (f.department && f.department.toLowerCase().includes(q))
+      );
+    }
     if (filterDept !== "All") {
       list = list.filter((f) => f.department === filterDept);
     }
@@ -80,7 +89,7 @@ export default function FacultyList({ onEditFaculty }) {
         break;
     }
     return list;
-  }, [faculties, filterDept, sortBy]);
+  }, [faculties, searchQuery, filterDept, sortBy]);
 
   // Delete faculty handler
   const handleDelete = async (faculty) => {
@@ -198,7 +207,7 @@ export default function FacultyList({ onEditFaculty }) {
                     {faculty.initial}
                   </span>
                   <span className="font-medium text-gray-900 truncate">
-                    {faculty.name}
+                    {faculty.initial}
                   </span>
                   <span className="px-2 py-1 rounded-full bg-green-100 text-green-700 text-xs font-semibold ml-2">
                     {faculty.department}
@@ -287,7 +296,7 @@ export default function FacultyList({ onEditFaculty }) {
                 <Dialog.Description className="text-gray-700 mb-4">
                   Are you sure you want to delete{" "}
                   <span className="font-semibold text-red-600">
-                    {deleteDialog.faculty?.name}
+                    {deleteDialog.faculty?.initial}
                   </span>
                   ? This action cannot be undone.
                 </Dialog.Description>

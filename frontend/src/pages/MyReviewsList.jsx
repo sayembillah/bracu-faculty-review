@@ -131,10 +131,8 @@ const MyReviewsList = ({ onReviewChange }) => {
   // Filter reviews by faculty name or initial
   const filteredReviews =
     reviews && search
-      ? reviews.filter(
-          (review) =>
-            review.faculty?.name.toLowerCase().includes(search.toLowerCase()) ||
-            review.faculty?.initial.toLowerCase().includes(search.toLowerCase())
+      ? reviews.filter((review) =>
+          review.faculty?.initial.toLowerCase().includes(search.toLowerCase())
         )
       : reviews;
 
@@ -197,7 +195,7 @@ const MyReviewsList = ({ onReviewChange }) => {
             <input
               type="text"
               className="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-400 transition"
-              placeholder="Search by faculty name or initial"
+              placeholder="Search by faculty initial"
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               aria-label="Search reviews"
@@ -219,9 +217,7 @@ const MyReviewsList = ({ onReviewChange }) => {
             >
               <div className="flex items-center gap-2 text-gray-700">
                 <span className="font-medium">Faculty:</span>
-                <span>
-                  {review.faculty?.name} ({review.faculty?.initial})
-                </span>
+                <span>{review.faculty?.initial}</span>
               </div>
               <div className="flex items-center gap-2 text-gray-700">
                 <span className="font-medium">Rating:</span>

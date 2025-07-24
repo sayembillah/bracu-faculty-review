@@ -48,7 +48,7 @@ export const createReview = async (req, res) => {
     // Optionally populate user and faculty info
     const populatedReview = await Review.findById(review._id)
       .populate("user", "name email")
-      .populate("faculty", "name initial department");
+      .populate("faculty", "initial department");
 
     res.status(201).json(populatedReview);
 
@@ -56,7 +56,7 @@ export const createReview = async (req, res) => {
     await logActivity({
       type: "review",
       user: userId,
-      description: `Reviewed faculty: ${facultyDoc.name}`,
+      description: `Reviewed faculty: ${facultyDoc.initial}`,
       relatedEntity: facultyDoc._id,
       entityModel: "Faculty",
     });
@@ -70,7 +70,7 @@ export const getMyReviews = async (req, res) => {
   try {
     const userId = req.user._id;
     const reviews = await Review.find({ user: userId })
-      .populate("faculty", "name initial department")
+      .populate("faculty", "initial department")
       .sort({ createdAt: -1 });
     res.json(reviews);
   } catch (error) {

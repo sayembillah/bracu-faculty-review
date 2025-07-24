@@ -143,7 +143,7 @@ const FacultyReview = () => {
                 <div>
                   <div className="flex items-center gap-3">
                     <h1 className="text-4xl font-extrabold text-gray-900 mb-2">
-                      {faculty ? faculty.name : "Faculty Name"}
+                      {faculty ? faculty.initial : "Faculty Initial"}
                     </h1>
                     {/* Favorite Button */}
                     <motion.button
@@ -180,16 +180,14 @@ const FacultyReview = () => {
                     </motion.button>
                   </div>
                   <div className="flex flex-wrap items-center gap-2 mb-2">
-                    <span className="px-3 py-1 rounded-full bg-blue-100 text-blue-700 text-sm font-medium">
-                      {faculty ? faculty.initial : "Initial"}
-                    </span>
+                    {/* Initial chip removed for privacy */}
                     <span className="px-3 py-1 rounded-full bg-green-100 text-green-700 text-sm font-medium">
                       {faculty && faculty.department
                         ? faculty.department
                         : "CSE"}
                     </span>
-                    {(faculty && faculty.taughtCourses
-                      ? faculty.taughtCourses
+                    {(faculty && faculty.courses
+                      ? faculty.courses
                       : ["CSE110", "CSE220", "CSE230"]
                     ).map((course) => (
                       <span

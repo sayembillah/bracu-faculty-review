@@ -14,6 +14,7 @@ import {
   TrashIcon,
 } from "@heroicons/react/24/outline";
 import { useAddFacultyMutation } from "../redux/apiSlice";
+import toast from "react-hot-toast";
 
 const departments = [
   "CSE",
@@ -30,7 +31,6 @@ const departments = [
 
 export default function AddFacultyForm({ onFacultyAdded }) {
   const [initial, setInitial] = useState("");
-  const [name, setName] = useState("");
   const [department, setDepartment] = useState("");
   const [courseInput, setCourseInput] = useState("");
   const [taughtCourses, setTaughtCourses] = useState([]);
@@ -118,7 +118,6 @@ export default function AddFacultyForm({ onFacultyAdded }) {
 
   const clearForm = () => {
     setInitial("");
-    setName("");
     setDepartment("");
     setCourseInput("");
     setTaughtCourses([]);
@@ -134,18 +133,18 @@ export default function AddFacultyForm({ onFacultyAdded }) {
     e.preventDefault();
     setError("");
     setSuccess("");
-    if (!initial || !name || !department || taughtCourses.length === 0) {
+    if (!initial || !department || taughtCourses.length === 0) {
       setError("All fields are required.");
       return;
     }
     try {
       const res = await addFaculty({
         initial,
-        name,
         department,
         taughtCourses,
         adminReviews,
       }).unwrap();
+      toast.success("Faculty added!");
       setSuccess("Faculty added successfully!");
       clearForm();
       if (onFacultyAdded) onFacultyAdded(res);
@@ -181,21 +180,7 @@ export default function AddFacultyForm({ onFacultyAdded }) {
           required
         />
       </div>
-      {/* Name */}
-      <div>
-        <label className="block text-sm font-medium text-gray-700 flex items-center gap-1">
-          <BuildingLibraryIcon className="h-5 w-5 text-gray-400" />
-          Name
-        </label>
-        <input
-          type="text"
-          className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:ring-blue-500 focus:border-blue-500"
-          value={name}
-          onChange={(e) => setName(e.target.value)}
-          maxLength={100}
-          required
-        />
-      </div>
+      {/* Name field removed */}
       {/* Department */}
       <div>
         <label className="block text-sm font-medium text-gray-700 flex items-center gap-1">

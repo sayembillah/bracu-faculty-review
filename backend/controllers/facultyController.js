@@ -7,10 +7,10 @@ import Review from "../models/Review.js";
  */
 export const addFaculty = async (req, res) => {
   try {
-    const { initial, name, department, taughtCourses, adminReviews } = req.body;
+    const { initial, department, taughtCourses, adminReviews } = req.body;
 
     // Validate required fields
-    if (!initial || !name || !department || !Array.isArray(taughtCourses)) {
+    if (!initial || !department || !Array.isArray(taughtCourses)) {
       return res.status(400).json({ message: "All fields are required" });
     }
 
@@ -25,7 +25,6 @@ export const addFaculty = async (req, res) => {
     // Create new faculty
     const faculty = await Faculty.create({
       initial,
-      name,
       department,
       courses: taughtCourses,
       averageRating: 0,
@@ -70,10 +69,10 @@ export const addFaculty = async (req, res) => {
 export const updateFaculty = async (req, res) => {
   try {
     const { id } = req.params;
-    const { initial, name, department, taughtCourses, adminReviews } = req.body;
+    const { initial, department, courses, adminReviews } = req.body;
 
     // Validate required fields
-    if (!initial || !name || !department || !Array.isArray(taughtCourses)) {
+    if (!initial || !department || !Array.isArray(courses)) {
       return res.status(400).json({ message: "All fields are required" });
     }
 
@@ -89,9 +88,8 @@ export const updateFaculty = async (req, res) => {
       id,
       {
         initial,
-        name,
         department,
-        courses: taughtCourses,
+        courses: courses,
       },
       { new: true }
     );

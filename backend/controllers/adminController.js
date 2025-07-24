@@ -34,7 +34,7 @@ export const getFlaggedReviews = async (req, res) => {
   try {
     const flagged = await Review.find({ "flags.0": { $exists: true } })
       .populate("user", "name email")
-      .populate("faculty", "name initial department")
+      .populate("faculty", "initial department")
       .lean();
     res.json(flagged);
   } catch (err) {
@@ -98,7 +98,7 @@ export const getUserReviews = async (req, res) => {
   try {
     const { userId } = req.params;
     const reviews = await Review.find({ user: userId })
-      .populate("faculty", "name")
+      .populate("faculty")
       .sort({ createdAt: -1 })
       .lean();
     res.json(reviews);

@@ -51,13 +51,11 @@ const UserNavbar = ({ onReviewAdded }) => {
     pollingInterval: 10000,
   });
 
-  // Filter faculties by initial or name
+  // Filter faculties by initial
   const suggestions =
     faculties && search
-      ? faculties.filter(
-          (f) =>
-            f.initial.toLowerCase().startsWith(search.toLowerCase()) ||
-            f.name.toLowerCase().includes(search.toLowerCase())
+      ? faculties.filter((f) =>
+          f.initial.toLowerCase().startsWith(search.toLowerCase())
         )
       : [];
 
@@ -366,7 +364,7 @@ const UserNavbar = ({ onReviewAdded }) => {
                   <form onSubmit={handleSubmit}>
                     <div className="mb-4">
                       <label className="block text-sm font-medium text-gray-700 mb-1">
-                        Faculty Initial or Name
+                        Faculty Initial
                       </label>
                       <input
                         type="text"
@@ -378,7 +376,7 @@ const UserNavbar = ({ onReviewAdded }) => {
                         }}
                         onFocus={() => setShowSuggestions(true)}
                         className="w-full border border-blue-300 rounded-md px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-300 transition-all duration-150"
-                        placeholder="E.g., AAC or Alice"
+                        placeholder="E.g., AAC"
                         autoComplete="off"
                       />
                       <span className="text-xs text-gray-500 mt-1 block">
@@ -408,7 +406,7 @@ const UserNavbar = ({ onReviewAdded }) => {
                                   : ""
                               }`}
                             >
-                              {item.initial} - {item.name}
+                              {item.initial}
                               {item.department && (
                                 <span className="text-xs text-gray-400 ml-2">
                                   ({item.department})
@@ -422,13 +420,12 @@ const UserNavbar = ({ onReviewAdded }) => {
                         suggestions.length === 0 &&
                         !facultiesLoading && (
                           <div className="text-xs text-gray-400 mt-2">
-                            No faculty found with that initial or name.
+                            No faculty found with that initial.
                           </div>
                         )}
                       {selectedFaculty && (
                         <div className="mt-2 text-xs text-green-600">
-                          Selected: {selectedFaculty.initial} -{" "}
-                          {selectedFaculty.name}
+                          Selected: {selectedFaculty.initial}
                         </div>
                       )}
                     </div>
