@@ -11,6 +11,7 @@ import {
   useRemoveFavoriteFacultyMutation,
 } from "../redux/apiSlice";
 import Header from "../components/Header";
+import Loading from "../components/Loading";
 import {
   HandThumbUpIcon,
   HandThumbDownIcon,
@@ -221,7 +222,9 @@ const FacultyReview = () => {
               Reviews
             </h2>
             {reviewsLoading ? (
-              <div className="text-gray-500">Loading reviews...</div>
+              <div className="flex justify-center items-center py-8">
+                <Loading className="py-8" />
+              </div>
             ) : reviews.length === 0 ? (
               <div className="text-gray-400 italic">No reviews yet.</div>
             ) : (

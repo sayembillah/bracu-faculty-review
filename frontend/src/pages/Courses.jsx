@@ -15,6 +15,7 @@ import {
 import clsx from "clsx";
 import { useGetFacultiesQuery } from "../redux/apiSlice";
 import { useNavigate } from "react-router-dom";
+import Loading from "../components/Loading";
 
 // Departments for filter
 const departments = [
@@ -254,8 +255,8 @@ export default function Courses() {
       {/* Course List */}
       <div className="h-[60vh] overflow-y-auto grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-5 pr-1 transition-all">
         {isLoading ? (
-          <div className="col-span-full text-gray-400 text-center py-10">
-            Loading courses...
+          <div className="col-span-full flex justify-center items-center py-10">
+            <Loading />
           </div>
         ) : filteredCourses.length === 0 ? (
           <div className="col-span-full text-gray-400 text-center py-10">

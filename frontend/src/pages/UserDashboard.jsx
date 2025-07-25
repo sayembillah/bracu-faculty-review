@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import WelcomeSection from "./WelcomeSection";
 import MyReviewsList from "./MyReviewsList";
 import UserNavbar from "../components/navbar/UserNavbar";
+import Loading from "../components/Loading";
 import {
   useGetMyReviewsQuery,
   useGetFavoriteFacultiesQuery,
@@ -56,7 +57,11 @@ const UserDashboard = () => {
         <div className="w-full md:w-96">
           {/* Favorite Faculties Section */}
           <AnimatePresence>
-            {me && favoriteFaculties.length > 0 && (
+            {favoritesLoading ? (
+              <div className="flex justify-center items-center py-8">
+                <Loading className="py-8" />
+              </div>
+            ) : me && favoriteFaculties.length > 0 ? (
               <motion.div
                 className="mb-6 bg-white rounded-lg shadow p-4"
                 initial={{ opacity: 0, scale: 0.97, y: 20 }}
@@ -113,7 +118,7 @@ const UserDashboard = () => {
                   </AnimatePresence>
                 </ul>
               </motion.div>
-            )}
+            ) : null}
           </AnimatePresence>
         </div>
       </div>

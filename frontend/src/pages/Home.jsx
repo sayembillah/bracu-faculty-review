@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import Header from "../components/Header";
 import { useGetFacultiesQuery } from "../redux/apiSlice";
+import Loading from "../components/Loading";
 import { useNavigate } from "react-router-dom";
 import {
   BoltIcon,
@@ -117,7 +118,9 @@ const Home = () => {
                   transition={{ duration: 0.25 }}
                 >
                   {isLoading ? (
-                    <div className="py-2 text-gray-500">Loading...</div>
+                    <div className="flex justify-center items-center py-2">
+                      <Loading className="py-4" />
+                    </div>
                   ) : filteredFaculties.length > 0 ? (
                     filteredFaculties.map((faculty, idx) => (
                       <motion.div
